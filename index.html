@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>印章自动生成</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>中国居民委员会/村委会印章生成</h1>
+    <div class="main-layout">
+      <div class="controls">
+        <div class="section-title">文案与类型</div>
+        <label>
+          类型
+          <select id="type">
+            <option value="居民委员会">居民委员会</option>
+            <option value="村民委员会">村民委员会</option>
+          </select>
+        </label>
+        <label>
+          单位名称（上弧）
+          <input id="topText" value="赣州市南昌县琴城镇新建社区" placeholder="例如：赣州市南昌县琴城镇新建社区" />
+        </label>
+        <label>
+          行政代码（下弧）
+          <input id="serial" value="3610231000004" placeholder="例如：3610231000004" />
+        </label>
+        <div class="section-title">尺寸与样式</div>
+        <label>
+          背景图片
+          <input id="bgImage" type="file" accept="image/*" />
+        </label>
+        <label>
+          直径(px)
+          <input id="diameter" type="range" min="100" max="800" value="500" />
+        </label>
+        <label>
+          线宽(px)
+          <input id="ringWidth" type="range" min="6" max="24" value="14" />
+        </label>
+        <label>
+          字号(px)
+          <input id="fontSize" type="range" min="20" max="64" value="42" />
+        </label>
+        <label>
+          字体
+          <select id="fontSelect">
+            <option value="SimSun" selected>SimSun</option>
+            <option value="Microsoft YaHei">Microsoft YaHei</option>
+            <option value="SimHei">SimHei</option>
+            <option value="KaiTi">KaiTi</option>
+            <option value="FangSong">FangSong</option>
+            <option value="PingFang SC">PingFang SC</option>
+            <option value="Songti SC">Songti SC</option>
+            <option value="Noto Sans SC">Noto Sans SC</option>
+          </select>
+        </label>
+        <label>
+          自定义字体
+          <input id="fontCustom" placeholder="输入系统字体名，可留空" />
+        </label>
+        <div class="section-title">单位名称（上弧）参数</div>
+        <div class="arc-row">
+          <label>
+            上弧起始角(°)
+            <input id="topStartDeg" type="range" min="0" max="360" step="1" value="240" />
+          </label>
+          <label>
+            上弧距外圈(px)
+            <input id="topOffset" type="range" min="4" max="60" step="1" value="22" />
+          </label>
+        </div>
+        <div class="arc-row">
+          <label>
+            上弧字距(倍数)
+            <input id="topSpacing" type="range" min="0.6" max="1.6" step="0.02" value="1.0" />
+          </label>
+          <label>
+            上弧旋转偏移(°)
+            <input id="topRotateDeg" type="range" min="-180" max="180" step="1" value="0" />
+          </label>
+        </div>
+        <div class="arc-row">
+          <label>
+            上弧字号(px)
+            <input id="topFontSize" type="range" min="16" max="64" step="1" value="42" />
+          </label>
+        </div>
+        
+        <div class="section-title">行政编码（下弧）参数</div>
+        <div class="arc-row">
+          <label>
+            下弧起始角(°)
+            <input id="bottomStartDeg" type="range" min="0" max="360" step="1" value="225" />
+          </label>
+          <label>
+            下弧距外圈(px)
+            <input id="bottomOffset" type="range" min="4" max="60" step="1" value="28" />
+          </label>
+        </div>
+        <div class="arc-row">
+          <label>
+            下弧字距(倍数)
+            <input id="bottomSpacing" type="range" min="0.1" max="2" step="0.02" value="1.0" />
+          </label>
+          <label>
+            下弧字号(px)
+            <input id="bottomFontSize" type="range" min="12" max="48" step="1" value="26" />
+          </label>
+        </div>
+        <div class="section-title"></div>
+        <button id="download">下载PNG</button>
+      </div>
+      <div class="canvas-wrap">
+        <div id="stage" class="stage">
+          <canvas id="bgCanvas"></canvas>
+          <img id="sealOverlay" alt="seal" draggable="false" ondragstart="return false" />
+        </div>
+        <div class="toolbar">
+          <button id="blendToggle">正片叠底</button>
+          <button id="resetState">重置</button>
+          <span id="coords">X: 0, Y: 0</span>
+          <span id="canvasSize">画布尺寸: 0 x 0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="seal.js"></script>
+</body>
+</html>

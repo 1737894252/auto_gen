@@ -130,6 +130,10 @@ function boot(){
   const resetState=$("resetState");
   const bgImage=$("bgImage");
   const downloadBtn=$("download");
+  // 新增分步流程按钮
+  const designCompleteBtn=$("designComplete");
+  const uploadWrapper=$("uploadWrapper");
+  const saveBtn=$("saveBtn");
   // 添加上下弧字体大小控制
   const topFontSize=$("topFontSize");
   const bottomFontSize=$("bottomFontSize");
@@ -526,6 +530,19 @@ function boot(){
     // 应用重置后的配置
     update();
   });
+  // 分步流程逻辑
+  
+  // 1. 设计完成按钮点击事件 - 显示上传图片按钮
+  designCompleteBtn.addEventListener("click",()=>{
+    // 显示上传图片按钮
+    uploadWrapper.style.display = 'inline-block';
+    // 隐藏设计完成按钮
+    designCompleteBtn.style.display = 'none';
+    // 提示用户上传图片
+    alert('设计已完成，请上传图片来应用印章');
+  });
+  
+  // 2. 上传图片事件 - 显示保存按钮
   bgImage.addEventListener("change",()=>{
     const file=bgImage.files[0];
     if(!file)return;
@@ -559,11 +576,18 @@ function boot(){
       bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
       bgCtx.drawImage(img, 0, 0, bgCanvas.width, bgCanvas.height);
       
-      update()
+      update();
+      
+      // 显示保存按钮
+      saveBtn.style.display = 'inline-block';
+      // 提示用户调整印章位置
+      alert('图片已上传，请调整印章在图片上的位置，然后点击保存并下载');
     };
     img.src=URL.createObjectURL(file)
   });
-  downloadBtn.addEventListener("click",()=>{
+  
+  // 3. 保存并下载按钮点击事件
+  saveBtn.addEventListener("click",()=>{
     const exp=document.createElement("canvas");
     exp.width=bgCanvas.width;
     exp.height=bgCanvas.height;
@@ -602,7 +626,24 @@ function boot(){
     const a=document.createElement("a");
     a.href=exp.toDataURL("image/png", 1.0); // 使用最高质量参数
     a.download=`${topText.value.trim()||"示例"}-${type.value}-合成.png`;
-    a.click()
+    a.click();
+    
+    // 重置流程，允许重新设计
+    setTimeout(() => {
+      if(confirm('下载完成，是否重新设计印章？')) {
+        // 重置界面
+        resetState.click();
+        // 恢复初始按钮状态
+        designCompleteBtn.style.display = 'inline-block';
+        uploadWrapper.style.display = 'none';
+        saveBtn.style.display = 'none';
+      }
+    }, 1000);
+  });
+  
+  // 保留原有的下载按钮事件，确保兼容性
+  downloadBtn.addEventListener("click",()=>{
+    saveBtn.click();
   });
     window.addEventListener("resize",()=>{
       drawBackground();

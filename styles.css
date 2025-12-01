@@ -54,7 +54,8 @@
   cursor:pointer;
 }
 
-.canvas-top-buttons #download{
+/* 主要按钮样式 */
+.primary-btn{
   padding:10px 20px;
   border:0;
   border-radius:6px;
@@ -64,10 +65,17 @@
   cursor:pointer;
   transition:all 0.3s ease;
   box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  font-weight:bold;
 }
 
-.canvas-top-buttons #download:hover{
+.primary-btn:hover{
   background:#d32f2f;
+  transform: translateY(-1px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
+
+.canvas-top-buttons #download{
+  display:none;
 }
 
 /* 操作空间样式 - 随着滚动条始终保持在右边 */

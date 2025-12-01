@@ -11,13 +11,14 @@
     <h1>中国居民委员会/村委会印章生成</h1>
     <div class="main-layout">
       <div class="canvas-wrap">
-        <!-- 画布顶部操作按钮 -->
+        <!-- 画布顶部操作按钮 - 分步显示 -->
         <div class="canvas-top-buttons">
-          <label class="file-input-wrapper">
+          <button id="designComplete" class="primary-btn">设计完成</button>
+          <label class="file-input-wrapper" id="uploadWrapper" style="display: none;">
             上传图片
             <input id="bgImage" type="file" accept="image/*" />
           </label>
-          <button id="download">下载PNG</button>
+          <button id="saveBtn" class="primary-btn" style="display: none;">保存并下载</button>
         </div>
         
         <div id="stage" class="stage">

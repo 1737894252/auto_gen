@@ -107,11 +107,8 @@ function drawBackground(){if(!bgImg)return;const bw=bgCanvas.width;const bh=bgCa
   bgCtx.imageSmoothingEnabled = true;
   bgCtx.imageSmoothingQuality = 'high';
   
-  const imgRatio=bgImg.width/bgImg.height;const canvasRatio=bw/bh;let drawWidth,drawHeight,offsetX=0,offsetY=0;
-  if(imgRatio>canvasRatio){drawHeight=bh;drawWidth=drawHeight*imgRatio;offsetX=(bw-drawWidth)/2;}
-  else{drawWidth=bw;drawHeight=drawWidth/imgRatio;offsetY=(bh-drawHeight)/2;}
-  
-  bgCtx.drawImage(bgImg,offsetX,offsetY,drawWidth,drawHeight)}
+  // 直接100%显示图片，填满整个画布
+  bgCtx.drawImage(bgImg,0,0,bw,bh);}
 
 function boot(){
   const type=$("type");
@@ -138,6 +135,9 @@ function boot(){
   const bottomFontSize=$("bottomFontSize");
   // 添加印章旋转控制
   const sealRotation=$("sealRotation");
+  // 添加操作空间开关控制
+  const controlsToggle=$("controlsToggle");
+  const controlsBox=$("controlsBox");
   let currentX=0,currentY=0;
   let blendOn=false;
   
@@ -447,28 +447,30 @@ function boot(){
     img.setAttribute('crossOrigin', 'anonymous'); // 确保跨域图片也能正常处理
     img.onload=()=>{
       bgImg=img;
-      // 获取canvas-wrap的最大可用宽度（考虑左右布局和响应式设计）
+      // 获取canvas-wrap的最大可用宽度
       const canvasWrap = stage.parentElement;
       const maxAvailableWidth = canvasWrap.clientWidth;
       
-      // 如果图片宽度超过最大可用宽度，等比例缩小
+      // 使用图片原始尺寸作为画布尺寸
       let targetWidth = img.width;
       let targetHeight = img.height;
       
+      // 如果图片宽度超过最大可用宽度，调整为最大可用宽度，高度按比例调整
+      // 保持画布在容器内可见
       if (targetWidth > maxAvailableWidth) {
         const scale = maxAvailableWidth / targetWidth;
         targetWidth = maxAvailableWidth;
         targetHeight = Math.round(img.height * scale);
       }
       
-      // 设置画布尺寸为调整后的尺寸
+      // 设置画布尺寸
       setBgSize(targetWidth, targetHeight);
       
       // 启用高质量图像平滑
       bgCtx.imageSmoothingEnabled = true;
       bgCtx.imageSmoothingQuality = 'high';
       
-      // 绘制图片（现在画布和调整后的图片尺寸相同，所以直接绘制）
+      // 直接100%显示图片，填满整个画布
       bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
       bgCtx.drawImage(img, 0, 0, bgCanvas.width, bgCanvas.height);
       
@@ -560,6 +562,14 @@ function boot(){
       drawBackground();
       positionOverlay(currentX,currentY);
       updateCoords()});
+    // 添加操作空间开关事件监听器
+    controlsToggle.addEventListener('click',()=>{
+      controlsBox.classList.toggle('open');
+    });
+    
+    // 默认打开操作空间
+    controlsBox.classList.add('open');
+    
     const cfg=loadConfig();
     applyInputs(cfg);
     update()}

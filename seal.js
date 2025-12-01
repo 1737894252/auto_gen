@@ -346,16 +346,22 @@ function boot(){
       cfg.bottomFontSize=bottomFontSize.value;
       // 保存印章旋转配置
       cfg.sealRotation=sealRotation?.value || 0;
-      localStorage.setItem('sealConfig',JSON.stringify(cfg))
-    }catch(e){}
+      localStorage.setItem('sealConfig',JSON.stringify(cfg));
+      console.log('印章配置保存成功:', cfg);
+    }catch(e){
+      console.error('印章配置保存失败:', e);
+    }
   }
   function loadConfig(){
     try{
       const raw=localStorage.getItem('sealConfig');
       if(!raw)return null;
-      return JSON.parse(raw)
+      const cfg=JSON.parse(raw);
+      console.log('印章配置加载成功:', cfg);
+      return cfg;
     }catch(e){
-      return null
+      console.error('印章配置加载失败:', e);
+      return null;
     }
   }
   function applyInputs(cfg){
@@ -591,6 +597,9 @@ function boot(){
   
   // 3. 保存并下载按钮点击事件
   saveBtn.addEventListener("click",()=>{
+    // 1. 首先保存当前配置，确保用户设置不会丢失
+    saveConfig();
+    
     const exp=document.createElement("canvas");
     exp.width=bgCanvas.width;
     exp.height=bgCanvas.height;
@@ -642,7 +651,7 @@ function boot(){
         saveBtn.style.display = 'none';
       } else {
         // 如果用户选择不重新设计，保持当前状态，不重置印章
-        // 保存当前的设计参数
+        // 再次保存当前的设计参数，确保所有最新设置都被保存
         saveConfig();
         // 保持当前按钮状态，允许用户继续编辑
       }

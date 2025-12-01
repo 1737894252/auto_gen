@@ -21,136 +21,136 @@
           <span id="coords">X: 0, Y: 0</span>
           <span id="canvasSize">画布尺寸: 0 x 0</span>
         </div>
-        
-        <!-- 操作空间盒子 - 悬浮在画布上 -->
-        <div class="controls-container">
-          <button id="controlsToggle" class="controls-toggle">⚙️ 操作面板</button>
-          <div id="controlsBox" class="controls-box">
-            <div class="controls">
-              <div class="section-title">文案与类型</div>
+      </div>
+      
+      <!-- 操作空间盒子 - 悬浮在页面右侧 -->
+      <div class="controls-container">
+        <button id="controlsToggle" class="controls-toggle">⚙️ 操作面板</button>
+        <div id="controlsBox" class="controls-box">
+          <div class="controls">
+            <div class="section-title">文案与类型</div>
+            <label>
+              类型
+              <select id="type">
+                <option value="居民委员会">居民委员会</option>
+                <option value="村民委员会">村民委员会</option>
+              </select>
+            </label>
+            <label>
+              单位名称
+              <input id="topText" value="赣州市南昌县琴城镇新建社区" placeholder="例如：赣州市南昌县琴城镇新建社区" />
+            </label>
+            <label>
+              行政代码
+              <input id="serial" value="3610231000004" placeholder="例如：3610231000004" />
+            </label>
+            <div class="section-title">尺寸与样式</div>
+            <label>
+              背景图片
+              <input id="bgImage" type="file" accept="image/*" />
+            </label>
+            <label>
+              圆直径(px)
+              <input id="diameter" type="range" min="100" max="800" value="500" />
+              <span class="range-value" id="diameterValue">500</span>
+            </label>
+            <label>
+              圆线宽(px)
+              <input id="ringWidth" type="range" min="6" max="24" value="14" />
+              <span class="range-value" id="ringWidthValue">14</span>
+            </label>
+            <label>
+              类型字号(px)
+              <input id="fontSize" type="range" min="20" max="64" value="42" />
+              <span class="range-value" id="fontSizeValue">42</span>
+            </label>
+            <label>
+              字体
+              <select id="fontSelect">
+                <option value="SimSun" selected>SimSun</option>
+                <option value="Microsoft YaHei">Microsoft YaHei</option>
+                <option value="SimHei">SimHei</option>
+                <option value="KaiTi">KaiTi</option>
+                <option value="FangSong">FangSong</option>
+                <option value="PingFang SC">PingFang SC</option>
+                <option value="Songti SC">Songti SC</option>
+                <option value="Noto Sans SC">Noto Sans SC</option>
+              </select>
+            </label>
+            <label>
+              自定义字体
+              <input id="fontCustom" placeholder="输入系统字体名，可留空" />
+            </label>
+            <label>
+              印章旋转(°)
+              <input id="sealRotation" type="range" min="-360" max="360" step="1" value="0" />
+              <span class="range-value" id="sealRotationValue">0</span>
+            </label>
+            <div class="section-title">单位名称参数</div>
+            <div class="arc-row">
               <label>
-                类型
-                <select id="type">
-                  <option value="居民委员会">居民委员会</option>
-                  <option value="村民委员会">村民委员会</option>
-                </select>
+                起始角(°)
+                <input id="topStartDeg" type="range" min="0" max="360" step="1" value="240" />
+                <span class="range-value" id="topStartDegValue">240</span>
               </label>
               <label>
-                单位名称
-                <input id="topText" value="赣州市南昌县琴城镇新建社区" placeholder="例如：赣州市南昌县琴城镇新建社区" />
+                距外圈(px)
+                <input id="topOffset" type="range" min="4" max="60" step="1" value="22" />
+                <span class="range-value" id="topOffsetValue">22</span>
               </label>
-              <label>
-                行政代码
-                <input id="serial" value="3610231000004" placeholder="例如：3610231000004" />
-              </label>
-              <div class="section-title">尺寸与样式</div>
-              <label>
-                背景图片
-                <input id="bgImage" type="file" accept="image/*" />
-              </label>
-              <label>
-                圆直径(px)
-                <input id="diameter" type="range" min="100" max="800" value="500" />
-                <span class="range-value" id="diameterValue">500</span>
-              </label>
-              <label>
-                圆线宽(px)
-                <input id="ringWidth" type="range" min="6" max="24" value="14" />
-                <span class="range-value" id="ringWidthValue">14</span>
-              </label>
-              <label>
-                类型字号(px)
-                <input id="fontSize" type="range" min="20" max="64" value="42" />
-                <span class="range-value" id="fontSizeValue">42</span>
-              </label>
-              <label>
-                字体
-                <select id="fontSelect">
-                  <option value="SimSun" selected>SimSun</option>
-                  <option value="Microsoft YaHei">Microsoft YaHei</option>
-                  <option value="SimHei">SimHei</option>
-                  <option value="KaiTi">KaiTi</option>
-                  <option value="FangSong">FangSong</option>
-                  <option value="PingFang SC">PingFang SC</option>
-                  <option value="Songti SC">Songti SC</option>
-                  <option value="Noto Sans SC">Noto Sans SC</option>
-                </select>
-              </label>
-              <label>
-                自定义字体
-                <input id="fontCustom" placeholder="输入系统字体名，可留空" />
-              </label>
-              <label>
-                印章旋转(°)
-                <input id="sealRotation" type="range" min="-360" max="360" step="1" value="0" />
-                <span class="range-value" id="sealRotationValue">0</span>
-              </label>
-              <div class="section-title">单位名称参数</div>
-              <div class="arc-row">
-                <label>
-                  起始角(°)
-                  <input id="topStartDeg" type="range" min="0" max="360" step="1" value="240" />
-                  <span class="range-value" id="topStartDegValue">240</span>
-                </label>
-                <label>
-                  距外圈(px)
-                  <input id="topOffset" type="range" min="4" max="60" step="1" value="22" />
-                  <span class="range-value" id="topOffsetValue">22</span>
-                </label>
-              </div>
-              <div class="arc-row">
-                <label>
-                  字距(倍数)
-                  <input id="topSpacing" type="range" min="0.6" max="1.6" step="0.02" value="1.0" />
-                  <span class="range-value" id="topSpacingValue">1.0</span>
-                </label>
-                <label>
-                  旋转偏移(°)
-                  <input id="topRotateDeg" type="range" min="-180" max="180" step="1" value="0" />
-                  <span class="range-value" id="topRotateDegValue">0</span>
-                </label>
-              </div>
-              <div class="arc-row">
-                <label>
-                  字号(px)
-                  <input id="topFontSize" type="range" min="16" max="64" step="1" value="42" />
-                  <span class="range-value" id="topFontSizeValue">42</span>
-                </label>
-                <label>
-                  字高(倍数)
-                  <input id="topFontHeight" type="range" min="0.5" max="2.0" step="0.1" value="1.0" />
-                  <span class="range-value" id="topFontHeightValue">1.0</span>
-                </label>
-              </div>
-              
-              <div class="section-title">行政编码（下弧）参数</div>
-              <div class="arc-row">
-                <label>
-                  起始角(°)
-                  <input id="bottomStartDeg" type="range" min="0" max="360" step="1" value="225" />
-                  <span class="range-value" id="bottomStartDegValue">225</span>
-                </label>
-                <label>
-                  距外圈(px)
-                  <input id="bottomOffset" type="range" min="4" max="60" step="1" value="28" />
-                  <span class="range-value" id="bottomOffsetValue">28</span>
-                </label>
-              </div>
-              <div class="arc-row">
-                <label>
-                  字距(倍数)
-                  <input id="bottomSpacing" type="range" min="0.1" max="2" step="0.02" value="1.0" />
-                  <span class="range-value" id="bottomSpacingValue">1.0</span>
-                </label>
-                <label>
-                  字号(px)
-                  <input id="bottomFontSize" type="range" min="12" max="48" step="1" value="26" />
-                  <span class="range-value" id="bottomFontSizeValue">26</span>
-                </label>
-              </div>
-              <div class="section-title"></div>
-              <button id="download">下载PNG</button>
             </div>
+            <div class="arc-row">
+              <label>
+                字距(倍数)
+                <input id="topSpacing" type="range" min="0.6" max="1.6" step="0.02" value="1.0" />
+                <span class="range-value" id="topSpacingValue">1.0</span>
+              </label>
+              <label>
+                旋转偏移(°)
+                <input id="topRotateDeg" type="range" min="-180" max="180" step="1" value="0" />
+                <span class="range-value" id="topRotateDegValue">0</span>
+              </label>
+            </div>
+            <div class="arc-row">
+              <label>
+                字号(px)
+                <input id="topFontSize" type="range" min="16" max="64" step="1" value="42" />
+                <span class="range-value" id="topFontSizeValue">42</span>
+              </label>
+              <label>
+                字高(倍数)
+                <input id="topFontHeight" type="range" min="0.5" max="2.0" step="0.1" value="1.0" />
+                <span class="range-value" id="topFontHeightValue">1.0</span>
+              </label>
+            </div>
+            
+            <div class="section-title">行政编码（下弧）参数</div>
+            <div class="arc-row">
+              <label>
+                起始角(°)
+                <input id="bottomStartDeg" type="range" min="0" max="360" step="1" value="225" />
+                <span class="range-value" id="bottomStartDegValue">225</span>
+              </label>
+              <label>
+                距外圈(px)
+                <input id="bottomOffset" type="range" min="4" max="60" step="1" value="28" />
+                <span class="range-value" id="bottomOffsetValue">28</span>
+              </label>
+            </div>
+            <div class="arc-row">
+              <label>
+                字距(倍数)
+                <input id="bottomSpacing" type="range" min="0.1" max="2" step="0.02" value="1.0" />
+                <span class="range-value" id="bottomSpacingValue">1.0</span>
+              </label>
+              <label>
+                字号(px)
+                <input id="bottomFontSize" type="range" min="12" max="48" step="1" value="26" />
+                <span class="range-value" id="bottomFontSizeValue">26</span>
+              </label>
+            </div>
+            <div class="section-title"></div>
+            <button id="download">下载PNG</button>
           </div>
         </div>
       </div>

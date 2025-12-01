@@ -455,6 +455,12 @@ function boot(){
       // 设置画布尺寸
       setBgSize(targetWidth, targetHeight);
       
+      // 确保舞台元素的实际显示尺寸与画布尺寸一致
+      // 移除可能的max-width限制，确保舞台能完整显示图片
+      stage.style.maxWidth = 'none';
+      stage.style.width = targetWidth + 'px';
+      stage.style.height = targetHeight + 'px';
+      
       // 启用高质量图像平滑
       bgCtx.imageSmoothingEnabled = true;
       bgCtx.imageSmoothingQuality = 'high';

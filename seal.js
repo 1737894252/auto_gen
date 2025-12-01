@@ -480,64 +480,27 @@ function boot(){
     // 首先复制背景画布的内容，确保与显示完全一致
     ectx.drawImage(bgCanvas, 0, 0);
     
-    // 使用currentX和currentY直接获取印章在画布上的实际位置
-    const ox = currentX;
-    const oy = currentY;
-    const ow = parseInt(diameter.value, 10);
-    const oh = parseInt(diameter.value, 10);
+    // 计算舞台元素的缩放比例
+    const scaleX = bgCanvas.width / stage.clientWidth;
+    const scaleY = bgCanvas.height / stage.clientHeight;
     
-    // 使用与update函数完全相同的方式生成印章配置
-    const sealOpts={
-      type:type.value,
-      topText:topText.value.trim()||"示例上弧文字",
-      serial:serial.value.trim()||"0000000000000",
-      diameter:ow,
-      ringWidth:parseInt(ringWidth.value,10),
-      fontSize:parseInt(fontSize.value,10),
-      // 添加上下弧字体大小和上弧字高
-      topFontSize:parseInt(topFontSize.value,10),
-      topFontHeight:parseFloat(topFontHeight.value),
-      bottomFontSize:parseInt(bottomFontSize.value,10),
-      fontFamily:(fontCustom.value.trim()||fontSelect.value||'Microsoft YaHei'),
-      topStartDeg:parseFloat(topStartDeg.value),
-      bottomStartDeg:parseFloat(bottomStartDeg.value),
-      topOffset:parseFloat(topOffset.value),
-      bottomOffset:parseFloat(bottomOffset.value),
-      topSpacing:parseFloat(topSpacing.value),
-      bottomSpacing:parseFloat(bottomSpacing.value),
-      topRotateDeg:parseFloat(topRotateDeg.value),
-      // 添加印章旋转角度
-      rotation: parseFloat(sealRotation?.value || 0)
-    };
-    
-    // 保存当前画布状态
-    ectx.save();
-    // 移动到印章位置
-    ectx.translate(ox, oy);
-    
-    // 创建一个临时canvas专门用于绘制透明背景的印章
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = ow;
-    tempCanvas.height = oh;
-    const tempCtx = tempCanvas.getContext("2d");
-    
-    // 确保临时canvas有透明背景
-    tempCtx.clearRect(0, 0, ow, oh);
-    
-    // 使用与update函数相同的renderSeal函数绘制印章
-    renderSeal(tempCtx, ow, sealOpts);
+    // 计算印章在最终画布上的位置和尺寸
+    const sealX = currentX * scaleX;
+    const sealY = currentY * scaleY;
+    const sealWidth = overlay.clientWidth * scaleX;
+    const sealHeight = overlay.clientHeight * scaleY;
     
     // 如果启用了混合模式，在绘制印章时应用正片叠底效果
     if (blendOn) {
-      // 设置合成模式为正片叠底
       ectx.globalCompositeOperation = "multiply";
     }
     
-    // 将临时canvas绘制到最终canvas上
-    ectx.drawImage(tempCanvas, 0, 0);
+    // 直接使用当前显示的overlay图像绘制到最终画布上
+    // 这样可以确保下载的印章与显示的印章完全一致
+    ectx.drawImage(overlay, sealX, sealY, sealWidth, sealHeight);
     
-    // 恢复画布状态
-    ectx.restore();
+    // 恢复默认合成模式
+    ectx.globalCompositeOperation = "source-over";
     
     // 生成高质量的PNG图片，使用最高质量参数
     const a=document.createElement("a");

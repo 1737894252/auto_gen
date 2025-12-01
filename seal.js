@@ -17,7 +17,7 @@ function drawCircle(ctx,cx,cy,r,lineWidth,color){ctx.beginPath();ctx.arc(cx,cy,r
 
 function splitChars(s){return Array.from(s)}
 
-function drawArcText(ctx,text,cx,cy,r,start,end,fontSize,fontFamily,color,invert=false,orientation="tangent",rotateOffsetRad=0){const chars=splitChars(text);if(chars.length===0)return;const total=end-start;const step=chars.length>1?total/(chars.length-1):0;ctx.save();ctx.fillStyle=color;ctx.textBaseline="middle";ctx.font=`${fontSize}px ${fontFamily}`;for(let i=0;i<chars.length;i++){const angle=start+step*i;ctx.save();ctx.translate(cx+Math.cos(angle)*r,cy+Math.sin(angle)*r);const rot=orientation==="radial"?(angle+(invert?Math.PI:0)+rotateOffsetRad):(angle+(invert?-Math.PI/2:Math.PI/2)+rotateOffsetRad);ctx.rotate(rot);ctx.fillText(chars[i],0,0);ctx.restore()}ctx.restore()}
+function drawArcText(ctx,text,cx,cy,r,start,end,fontSize,fontFamily,color,invert=false,orientation="tangent",rotateOffsetRad=0,fontHeight=1.0){const chars=splitChars(text);if(chars.length===0)return;const total=end-start;const step=chars.length>1?total/(chars.length-1):0;ctx.save();ctx.fillStyle=color;ctx.textBaseline="middle";ctx.font=`${fontSize}px ${fontFamily}`;for(let i=0;i<chars.length;i++){const angle=start+step*i;ctx.save();ctx.translate(cx+Math.cos(angle)*r,cy+Math.sin(angle)*r);const rot=orientation==="radial"?(angle+(invert?Math.PI:0)+rotateOffsetRad):(angle+(invert?-Math.PI/2:Math.PI/2)+rotateOffsetRad);ctx.rotate(rot);if(fontHeight!==1.0){ctx.scale(1,fontHeight);}ctx.fillText(chars[i],0,0);ctx.restore()}ctx.restore()}
 
 function drawCenterText(ctx,text,cx,cy,fontSize,fontFamily,color){ctx.save();ctx.fillStyle=color;ctx.textAlign="center";ctx.textBaseline="middle";ctx.font=`${fontSize}px ${fontFamily}`;ctx.fillText(text,cx,cy);ctx.restore()}
 
@@ -26,7 +26,14 @@ function renderSeal(ctx, d, opts){// 确保画布有透明背景
   ctx.save();
   ctx.clearRect(0,0,d,d); // 清除画布，设置透明背景
   
+  // 添加印章整体旋转功能
   const cx=d/2,cy=d/2;const color="#e53935";
+  // 应用印章整体旋转
+  if (opts.rotation) {
+    ctx.translate(cx, cy);
+    ctx.rotate(opts.rotation * Math.PI / 180);
+    ctx.translate(-cx, -cy);
+  }
   drawCircle(ctx,cx,cy,d/2-opts.ringWidth/2,opts.ringWidth,color);
   const fontFamily=opts.fontFamily;const baseSize=opts.fontSize;
   const topText=opts.topText;const typeText=opts.type;const serialText=opts.serial;
@@ -35,8 +42,8 @@ function renderSeal(ctx, d, opts){// 确保画布有透明背景
   const topEnd=topStart+topSpan;const topRadius=d/2-opts.ringWidth/2-opts.topOffset;
   const topRotate=toRad(opts.topRotateDeg||0);
   
-  // 使用用户设置的topFontSize而不是baseSize
-  drawArcText(ctx,topText,cx,cy,topRadius,topStart,topEnd,opts.topFontSize,fontFamily,color,false,"radial",topRotate);
+  // 使用用户设置的topFontSize和topFontHeight
+  drawArcText(ctx,topText,cx,cy,topRadius,topStart,topEnd,opts.topFontSize,fontFamily,color,false,"radial",topRotate,opts.topFontHeight||1.0);
   const starOuter=d*0.14;const starInner=d*0.052;
   drawStar(ctx,cx,cy,starOuter,starInner,color);
   const typeSize=baseSize*1.2;
@@ -54,7 +61,14 @@ function renderSealToCanvas(cctx,d,opts){// 确保画布有透明背景
   cctx.save();
   cctx.clearRect(0,0,d,d); // 清除画布，设置透明背景
   
+  // 添加印章整体旋转功能
   const cx=d/2,cy=d/2;const color="#e53935";
+  // 应用印章整体旋转
+  if (opts.rotation) {
+    cctx.translate(cx, cy);
+    cctx.rotate(opts.rotation * Math.PI / 180);
+    cctx.translate(-cx, -cy);
+  }
   drawCircle(cctx,cx,cy,d/2-opts.ringWidth/2,opts.ringWidth,color);
   const fontFamily=opts.fontFamily;const baseSize=opts.fontSize;
   const topText=opts.topText;const typeText=opts.type;const serialText=opts.serial;
@@ -63,8 +77,8 @@ function renderSealToCanvas(cctx,d,opts){// 确保画布有透明背景
   const topEnd=topStart+topSpan;const topRadius=d/2-opts.ringWidth/2-opts.topOffset;
   const topRotate=toRad(opts.topRotateDeg||0);
   
-  // 使用用户设置的topFontSize而不是baseSize
-  drawArcText(cctx,topText,cx,cy,topRadius,topStart,topEnd,opts.topFontSize,fontFamily,color,false,"radial",topRotate);
+  // 使用用户设置的topFontSize和topFontHeight
+  drawArcText(cctx,topText,cx,cy,topRadius,topStart,topEnd,opts.topFontSize,fontFamily,color,false,"radial",topRotate,opts.topFontHeight||1.0);
   const starOuter=d*0.14;const starInner=d*0.052;
   drawStar(cctx,cx,cy,starOuter,starInner,color);
   const typeSize=baseSize*1.2;
@@ -122,8 +136,28 @@ function boot(){
   // 添加上下弧字体大小控制
   const topFontSize=$("topFontSize");
   const bottomFontSize=$("bottomFontSize");
+  // 添加印章旋转控制
+  const sealRotation=$("sealRotation");
   let currentX=0,currentY=0;
   let blendOn=false;
+  
+  // 获取所有range-value元素
+  const diameterValue=$("diameterValue");
+  const ringWidthValue=$("ringWidthValue");
+  const fontSizeValue=$("fontSizeValue");
+  const sealRotationValue=$("sealRotationValue");
+  const topStartDegValue=$("topStartDegValue");
+  const topOffsetValue=$("topOffsetValue");
+  const topSpacingValue=$("topSpacingValue");
+  const topRotateDegValue=$("topRotateDegValue");
+  const topFontSizeValue=$("topFontSizeValue");
+  const bottomStartDegValue=$("bottomStartDegValue");
+  const bottomOffsetValue=$("bottomOffsetValue");
+  const bottomSpacingValue=$("bottomSpacingValue");
+  const bottomFontSizeValue=$("bottomFontSizeValue");
+  // 添加上弧字高控制
+  const topFontHeight=$("topFontHeight");
+  const topFontHeightValue=$("topFontHeightValue");
   function getFont(){const custom=fontCustom.value.trim();return custom||fontSelect.value||'Microsoft YaHei'}
   function positionOverlay(x,y){const maxX=stage.clientWidth-(overlay.clientWidth||0);const maxY=stage.clientHeight-(overlay.clientHeight||0);currentX=Math.max(0,Math.min(x,maxX));currentY=Math.max(0,Math.min(y,maxY));overlay.style.left=currentX+"px";overlay.style.top=currentY+"px"}
   
@@ -184,7 +218,10 @@ function boot(){
       cfg.topRotateDeg=topRotateDeg.value;
       // 保存上下弧字体大小配置
       cfg.topFontSize=topFontSize.value;
+      cfg.topFontHeight=topFontHeight.value;
       cfg.bottomFontSize=bottomFontSize.value;
+      // 保存印章旋转配置
+      cfg.sealRotation=sealRotation?.value || 0;
       localStorage.setItem('sealConfig',JSON.stringify(cfg))
     }catch(e){}
   }
@@ -215,7 +252,10 @@ function boot(){
     if(cfg.bottomSpacing!==undefined)bottomSpacing.value=cfg.bottomSpacing;
     if(cfg.topRotateDeg!==undefined)topRotateDeg.value=cfg.topRotateDeg;
     if(cfg.topFontSize!==undefined)topFontSize.value=cfg.topFontSize;
+    if(cfg.topFontHeight!==undefined)topFontHeight.value=cfg.topFontHeight;
     if(cfg.bottomFontSize!==undefined)bottomFontSize.value=cfg.bottomFontSize;
+    // 每次打开页面都将印章旋转设置为0°
+    if(sealRotation)sealRotation.value="0";
     if(cfg.overlayX!=null)currentX=parseFloat(cfg.overlayX);
     if(cfg.overlayY!=null)currentY=parseFloat(cfg.overlayY);
     if(cfg.blendOn!=null)setBlend(!!cfg.blendOn)
@@ -230,6 +270,7 @@ function boot(){
       fontSize:parseInt(fontSize.value,10),
       // 添加上下弧字体大小
       topFontSize:parseInt(topFontSize.value,10),
+      topFontHeight:parseFloat(topFontHeight.value),
       bottomFontSize:parseInt(bottomFontSize.value,10),
       fontFamily:getFont(),
       topStartDeg:parseFloat(topStartDeg.value),
@@ -238,10 +279,50 @@ function boot(){
       bottomOffset:parseFloat(bottomOffset.value),
       topSpacing:parseFloat(topSpacing.value),
       bottomSpacing:parseFloat(bottomSpacing.value),
-      topRotateDeg:parseFloat(topRotateDeg.value)
+      topRotateDeg:parseFloat(topRotateDeg.value),
+      // 添加印章旋转角度
+      rotation: parseFloat(sealRotation?.value || 0)
     }
   }
-  function update(){    const opts={      type:type.value,      topText:topText.value.trim()||"示例上弧文字",      serial:serial.value.trim()||"0000000000000",      diameter:parseInt(diameter.value,10),      ringWidth:parseInt(ringWidth.value,10),      fontSize:parseInt(fontSize.value,10),      // 添加上下弧字体大小      topFontSize:parseInt(topFontSize.value,10),      bottomFontSize:parseInt(bottomFontSize.value,10),      fontFamily:(fontCustom.value.trim()||fontSelect.value||'Microsoft YaHei'),      topStartDeg:parseFloat(topStartDeg.value),      bottomStartDeg:parseFloat(bottomStartDeg.value),      topOffset:parseFloat(topOffset.value),      bottomOffset:parseFloat(bottomOffset.value),      topSpacing:parseFloat(topSpacing.value),      bottomSpacing:parseFloat(bottomSpacing.value),      topRotateDeg:parseFloat(topRotateDeg.value)    };
+  function update(){
+    const opts={
+      type:type.value,
+      topText:topText.value.trim()||"示例上弧文字",
+      serial:serial.value.trim()||"0000000000000",
+      diameter:parseInt(diameter.value,10),
+      ringWidth:parseInt(ringWidth.value,10),
+      fontSize:parseInt(fontSize.value,10),
+      // 添加上下弧字体大小和上弧字高
+      topFontSize:parseInt(topFontSize.value,10),
+      topFontHeight:parseFloat(topFontHeight.value),
+      bottomFontSize:parseInt(bottomFontSize.value,10),
+      fontFamily:(fontCustom.value.trim()||fontSelect.value||'Microsoft YaHei'),
+      topStartDeg:parseFloat(topStartDeg.value),
+      bottomStartDeg:parseFloat(bottomStartDeg.value),
+      topOffset:parseFloat(topOffset.value),
+      bottomOffset:parseFloat(bottomOffset.value),
+      topSpacing:parseFloat(topSpacing.value),
+      bottomSpacing:parseFloat(bottomSpacing.value),
+      topRotateDeg:parseFloat(topRotateDeg.value),
+      // 添加印章旋转角度
+      rotation: parseFloat(sealRotation?.value || 0)
+    };
+    
+    // 更新所有range-value显示
+    diameterValue.textContent = diameter.value;
+    ringWidthValue.textContent = ringWidth.value;
+    fontSizeValue.textContent = fontSize.value;
+    sealRotationValue.textContent = sealRotation?.value || 0;
+    topStartDegValue.textContent = topStartDeg.value;
+    topOffsetValue.textContent = topOffset.value;
+    topSpacingValue.textContent = parseFloat(topSpacing.value).toFixed(2);
+    topRotateDegValue.textContent = topRotateDeg.value;
+    topFontSizeValue.textContent = topFontSize.value;
+    topFontHeightValue.textContent = parseFloat(topFontHeight.value).toFixed(1);
+    bottomStartDegValue.textContent = bottomStartDeg.value;
+    bottomOffsetValue.textContent = bottomOffset.value;
+    bottomSpacingValue.textContent = parseFloat(bottomSpacing.value).toFixed(2);
+    bottomFontSizeValue.textContent = bottomFontSize.value;
     
     // 直接在全局canvas上渲染印章，然后转换为data URL
     const d=opts.diameter;
@@ -284,6 +365,47 @@ function boot(){
   fontSelect.addEventListener("change",update);
   fontCustom.addEventListener("input",update);
   topRotateDeg.addEventListener("input",update);
+  // 添加上下弧字体大小和上弧字高的事件监听器
+  topFontSize.addEventListener("input",update);
+  topFontHeight.addEventListener("input",update);
+  bottomFontSize.addEventListener("input",update);
+  // 添加印章旋转的事件监听器
+  sealRotation?.addEventListener("input",update);
+  blendToggle.addEventListener("click",()=>{
+    setBlend(!blendOn);
+    saveConfig();
+  });
+  resetState.addEventListener("click",()=>{
+    // 重置所有输入控件到默认值
+    type.value = "行政章";
+    topText.value = "示例上弧文字";
+    serial.value = "0000000000000";
+    diameter.value = "400";
+    ringWidth.value = "20";
+    fontSize.value = "36";
+    topStartDeg.value = "240";
+    bottomStartDeg.value = "225";
+    topOffset.value = "28";
+    bottomOffset.value = "28";
+    topSpacing.value = "1.2";
+    bottomSpacing.value = "1.0";
+    fontSelect.value = "";
+    fontCustom.value = "";
+    topRotateDeg.value = "0";
+    topFontSize.value = "42";
+    topFontHeight.value = "1.0";
+    bottomFontSize.value = "26";
+    // 重置印章旋转角度
+    if (sealRotation) sealRotation.value = "0";
+    
+    // 重置位置和混合模式
+    currentX = stage.clientWidth / 2 - parseInt(diameter.value, 10) / 2;
+    currentY = stage.clientHeight / 2 - parseInt(diameter.value, 10) / 2;
+    setBlend(false);
+    
+    // 应用重置后的配置
+    update();
+  });
   bgImage.addEventListener("change",()=>{
     const file=bgImage.files[0];
     if(!file)return;
@@ -334,43 +456,28 @@ function boot(){
     ectx.imageSmoothingEnabled = true;
     ectx.imageSmoothingQuality = 'high';
     
-    // 绘制背景图片（直接使用原始图片，避免通过bgCanvas导致的二次压缩）
-    if(bgImg) {
-      const bw=bgCanvas.width;
-      const bh=bgCanvas.height;
-      const imgRatio=bgImg.width/bgImg.height;
-      const canvasRatio=bw/bh;
-      let drawWidth,drawHeight,offsetX=0,offsetY=0;
-      
-      if(imgRatio>canvasRatio){
-        drawHeight=bh;
-        drawWidth=drawHeight*imgRatio;
-        offsetX=(bw-drawWidth)/2;
-      }else{
-        drawWidth=bw;
-        drawHeight=drawWidth/imgRatio;
-        offsetY=(bh-drawHeight)/2;
-      }
-      
-      // 直接绘制原始图片，确保最高质量
-      ectx.drawImage(bgImg, offsetX, offsetY, drawWidth, drawHeight);
-    }
+    // 首先复制背景画布的内容，确保与显示完全一致
+    ectx.drawImage(bgCanvas, 0, 0);
     
-    const ox=parseFloat(overlay.style.left)||0;
-    const oy=parseFloat(overlay.style.top)||0;
-    const ow=parseInt(overlay.style.width)||parseInt(diameter.value);
-    const oh=parseInt(overlay.style.height)||parseInt(diameter.value);
+    // 获取overlay元素的实际位置和尺寸，确保与显示完全一致
+    const rect = overlay.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
+    const ox = rect.left - stageRect.left;
+    const oy = rect.top - stageRect.top;
+    const ow = rect.width;
+    const oh = rect.height;
     
-    // 直接使用renderSealToCanvas函数绘制印章，避免通过overlay.src导致的二次压缩
+    // 获取当前的印章配置
     const sealOpts={
       type:type.value,
       topText:topText.value.trim()||"示例上弧文字",
       serial:serial.value.trim()||"0000000000000",
-      diameter:ow,
+      diameter:parseInt(diameter.value,10),
       ringWidth:parseInt(ringWidth.value,10),
       fontSize:parseInt(fontSize.value,10),
-      // 使用用户设置的上下弧字体大小
+      // 使用用户设置的上下弧字体大小和上弧字高
       topFontSize:parseInt(topFontSize.value,10),
+      topFontHeight:parseFloat(topFontHeight.value),
       bottomFontSize:parseInt(bottomFontSize.value,10),
       fontFamily:getFont(),
       topStartDeg:parseFloat(topStartDeg.value),
@@ -379,19 +486,41 @@ function boot(){
       bottomOffset:parseFloat(bottomOffset.value),
       topSpacing:parseFloat(topSpacing.value),
       bottomSpacing:parseFloat(bottomSpacing.value),
-      topRotateDeg:parseFloat(topRotateDeg.value)
+      topRotateDeg:parseFloat(topRotateDeg.value),
+      // 添加印章旋转角度
+      rotation: parseFloat(sealRotation?.value || 0)
     };
     
     // 保存当前画布状态
     ectx.save();
     // 移动到印章位置
     ectx.translate(ox, oy);
-    // 绘制印章
-    renderSealToCanvas(ectx, ow, sealOpts);
+    
+    // 创建一个临时canvas专门用于绘制透明背景的印章
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = ow;
+    tempCanvas.height = oh;
+    const tempCtx = tempCanvas.getContext("2d");
+    
+    // 确保临时canvas有透明背景
+    tempCtx.clearRect(0, 0, ow, oh);
+    
+    // 在临时canvas上绘制印章
+    renderSealToCanvas(tempCtx, ow, sealOpts);
+    
+    // 如果启用了混合模式，在绘制印章时应用正片叠底效果
+    if (blendOn) {
+      // 设置合成模式为正片叠底
+      ectx.globalCompositeOperation = "multiply";
+    }
+    
+    // 将临时canvas绘制到最终canvas上
+    ectx.drawImage(tempCanvas, 0, 0);
+    
     // 恢复画布状态
     ectx.restore();
     
-    // 生成高质量的PNG图片，使用无压缩参数
+    // 生成高质量的PNG图片，使用最高质量参数
     const a=document.createElement("a");
     a.href=exp.toDataURL("image/png", 1.0); // 使用最高质量参数
     a.download=`${topText.value.trim()||"示例"}-${type.value}-合成.png`;

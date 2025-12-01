@@ -166,6 +166,28 @@ function boot(){
   let dragOffsetX=0;
   let dragOffsetY=0;
   
+  // 双指缩放相关变量
+  let isPinching=false;
+  let lastPinchDistance=0;
+  let initialPinchDiameter=0;
+  let pinchCenterX=0;
+  let pinchCenterY=0;
+  
+  // 计算两点之间的距离
+  function getDistance(touch1, touch2) {
+    const dx = touch2.clientX - touch1.clientX;
+    const dy = touch2.clientY - touch1.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  
+  // 计算两点之间的中心点
+  function getCenter(touch1, touch2) {
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2
+    };
+  }
+  
   // 鼠标事件
   overlay.addEventListener('mousedown',(e)=>{
     isDragging=true;
@@ -196,29 +218,97 @@ function boot(){
   
   // 触摸事件
   overlay.addEventListener('touchstart',(e)=>{
-    isDragging=true;
-    const touch=e.touches[0];
-    const rect=overlay.getBoundingClientRect();
-    const stageRect=stage.getBoundingClientRect();
-    dragOffsetX=touch.clientX-rect.left;
-    dragOffsetY=touch.clientY-rect.top;
-    e.preventDefault();
+    if(e.touches.length === 2) {
+      // 双指触摸，开始缩放
+      isPinching=true;
+      lastPinchDistance=getDistance(e.touches[0], e.touches[1]);
+      initialPinchDiameter=parseInt(diameter.value,10);
+      
+      // 计算初始中心点
+      const center=getCenter(e.touches[0], e.touches[1]);
+      const stageRect=stage.getBoundingClientRect();
+      pinchCenterX=center.x-stageRect.left;
+      pinchCenterY=center.y-stageRect.top;
+      
+      e.preventDefault();
+    } else if(e.touches.length === 1) {
+      // 单指触摸，开始拖拽
+      isDragging=true;
+      const touch=e.touches[0];
+      const rect=overlay.getBoundingClientRect();
+      const stageRect=stage.getBoundingClientRect();
+      dragOffsetX=touch.clientX-rect.left;
+      dragOffsetY=touch.clientY-rect.top;
+      e.preventDefault();
+    }
   });
   
   document.addEventListener('touchmove',(e)=>{
-    if(!isDragging)return;
-    const touch=e.touches[0];
-    const stageRect=stage.getBoundingClientRect();
-    const x=touch.clientX-stageRect.left-dragOffsetX;
-    const y=touch.clientY-stageRect.top-dragOffsetY;
-    positionOverlay(x,y);
-    updateCoords();
-    saveConfig();
-    e.preventDefault();
+    if(e.touches.length === 2 && isPinching) {
+      // 双指移动，进行缩放
+      const currentDistance=getDistance(e.touches[0], e.touches[1]);
+      const scale=currentDistance/lastPinchDistance;
+      
+      // 计算新的直径
+      let newDiameter=initialPinchDiameter*scale;
+      const minDiameter=parseInt(diameter.min,10)||100;
+      const maxDiameter=parseInt(diameter.max,10)||800;
+      newDiameter=Math.max(minDiameter, Math.min(maxDiameter, newDiameter));
+      
+      // 计算新的中心点
+      const center=getCenter(e.touches[0], e.touches[1]);
+      const stageRect=stage.getBoundingClientRect();
+      const newCenterX=center.x-stageRect.left;
+      const newCenterY=center.y-stageRect.top;
+      
+      // 保存当前直径，用于计算位置偏移
+      const oldDiameter=parseInt(diameter.value,10);
+      
+      // 更新直径输入框
+      diameter.value=Math.round(newDiameter);
+      const evt=new Event('input',{bubbles:true});
+      diameter.dispatchEvent(evt);
+      
+      // 调整印章位置，使其中心保持在双指中心点
+      const oldHalfWidth=oldDiameter/2;
+      const newHalfWidth=newDiameter/2;
+      
+      // 计算位置偏移：中心点变化 + 尺寸变化导致的偏移
+      const deltaX=(newCenterX - pinchCenterX) + (oldHalfWidth - newHalfWidth);
+      const deltaY=(newCenterY - pinchCenterY) + (oldHalfWidth - newHalfWidth);
+      
+      // 更新位置
+      currentX += deltaX;
+      currentY += deltaY;
+      positionOverlay(currentX, currentY);
+      updateCoords();
+      saveConfig();
+      
+      // 更新中心点和距离
+      pinchCenterX=newCenterX;
+      pinchCenterY=newCenterY;
+      lastPinchDistance=currentDistance;
+      initialPinchDiameter=newDiameter;
+      
+      e.preventDefault();
+    } else if(e.touches.length === 1 && isDragging) {
+      // 单指移动，进行拖拽
+      const touch=e.touches[0];
+      const stageRect=stage.getBoundingClientRect();
+      const x=touch.clientX-stageRect.left-dragOffsetX;
+      const y=touch.clientY-stageRect.top-dragOffsetY;
+      positionOverlay(x,y);
+      updateCoords();
+      saveConfig();
+      e.preventDefault();
+    }
   });
   
-  document.addEventListener('touchend',()=>{
-    if(isDragging){
+  document.addEventListener('touchend',(e)=>{
+    if(e.touches.length < 2) {
+      isPinching=false;
+    }
+    if(e.touches.length < 1) {
       isDragging=false;
     }
   });

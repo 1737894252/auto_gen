@@ -378,8 +378,8 @@ function boot(){
     if(cfg.topFontSize!==undefined)topFontSize.value=cfg.topFontSize;
     if(cfg.topFontHeight!==undefined)topFontHeight.value=cfg.topFontHeight;
     if(cfg.bottomFontSize!==undefined)bottomFontSize.value=cfg.bottomFontSize;
-    // 每次打开页面都将印章旋转设置为0°
-    if(sealRotation)sealRotation.value="0";
+    // 使用保存的印章旋转角度
+    if(sealRotation && cfg.sealRotation!==undefined)sealRotation.value=cfg.sealRotation;
     if(cfg.overlayX!=null)currentX=parseFloat(cfg.overlayX);
     if(cfg.overlayY!=null)currentY=parseFloat(cfg.overlayY);
     if(cfg.blendOn!=null)setBlend(!!cfg.blendOn)
@@ -387,8 +387,8 @@ function boot(){
   function buildOpts(){
     return{
       type:type.value,
-      topText:topText.value.trim()||"示例上弧文字",
-      serial:serial.value.trim()||"0000000000000",
+      topText:topText.value.trim()||"赣州市南昌县琴城镇新建社区",
+      serial:serial.value.trim()||"3610231000004",
       diameter:parseInt(diameter.value,10),
       ringWidth:parseInt(ringWidth.value,10),
       fontSize:parseInt(fontSize.value,10),
@@ -411,8 +411,8 @@ function boot(){
   function update(){
     const opts={
       type:type.value,
-      topText:topText.value.trim()||"示例上弧文字",
-      serial:serial.value.trim()||"0000000000000",
+      topText:topText.value.trim()||"赣州市南昌县琴城镇新建社区",
+      serial:serial.value.trim()||"3610231000004",
       diameter:parseInt(diameter.value,10),
       ringWidth:parseInt(ringWidth.value,10),
       fontSize:parseInt(fontSize.value,10),
@@ -420,7 +420,7 @@ function boot(){
       topFontSize:parseInt(topFontSize.value,10),
       topFontHeight:parseFloat(topFontHeight.value),
       bottomFontSize:parseInt(bottomFontSize.value,10),
-      fontFamily:(fontCustom.value.trim()||fontSelect.value||'Microsoft YaHei'),
+      fontFamily:(fontCustom.value.trim()||fontSelect.value||'SimSun'),
       topStartDeg:parseFloat(topStartDeg.value),
       bottomStartDeg:parseFloat(bottomStartDeg.value),
       topOffset:parseFloat(topOffset.value),
@@ -500,20 +500,23 @@ function boot(){
     saveConfig();
   });
   resetState.addEventListener("click",()=>{
+    // 重置前保存当前配置，以便用户可以恢复
+    saveConfig();
+    
     // 重置所有输入控件到默认值
-    type.value = "行政章";
-    topText.value = "示例上弧文字";
-    serial.value = "0000000000000";
-    diameter.value = "400";
-    ringWidth.value = "20";
-    fontSize.value = "36";
+    type.value = "居民委员会";
+    topText.value = "赣州市南昌县琴城镇新建社区";
+    serial.value = "3610231000004";
+    diameter.value = "500";
+    ringWidth.value = "14";
+    fontSize.value = "42";
     topStartDeg.value = "240";
     bottomStartDeg.value = "225";
-    topOffset.value = "28";
+    topOffset.value = "22";
     bottomOffset.value = "28";
-    topSpacing.value = "1.2";
+    topSpacing.value = "1.0";
     bottomSpacing.value = "1.0";
-    fontSelect.value = "";
+    fontSelect.value = "SimSun";
     fontCustom.value = "";
     topRotateDeg.value = "0";
     topFontSize.value = "42";
@@ -637,29 +640,41 @@ function boot(){
         designCompleteBtn.style.display = 'inline-block';
         uploadWrapper.style.display = 'none';
         saveBtn.style.display = 'none';
+      } else {
+        // 如果用户选择不重新设计，保持当前状态，不重置印章
+        // 保存当前的设计参数
+        saveConfig();
+        // 保持当前按钮状态，允许用户继续编辑
       }
     }, 1000);
   });
   
   // 保留原有的下载按钮事件，确保兼容性
-  downloadBtn.addEventListener("click",()=>{
-    saveBtn.click();
-  });
+  if(downloadBtn){
+    downloadBtn.addEventListener("click",()=>{
+      saveBtn.click();
+    });
+  }
     window.addEventListener("resize",()=>{
       drawBackground();
       positionOverlay(currentX,currentY);
       updateCoords()});
     // 添加操作空间开关事件监听器
-    controlsToggle.addEventListener('click',()=>{
-      controlsBox.classList.toggle('open');
-    });
-    
-    // 默认打开操作空间
-    controlsBox.classList.add('open');
+    if(controlsToggle && controlsBox){
+      controlsToggle.addEventListener('click',()=>{
+        controlsBox.classList.toggle('open');
+      });
+      
+      // 默认打开操作空间
+      controlsBox.classList.add('open');
+    }
     
     const cfg=loadConfig();
     applyInputs(cfg);
-    update()}
+    update();
+    // 页面加载完成后，保存当前配置（确保默认值也被保存）
+    saveConfig();
+  }
 
 // 完全移除重复的init函数代码
 // function init(){
@@ -674,9 +689,5 @@ function updateCanvasSize(){
     canvasSizeEl.textContent=`画布尺寸: ${w} x ${h}`;
   }
 }
-
-// 确保boot函数中的变量在全局作用域中可用
-let currentX=0,currentY=0;
-let blendOn=false;
 
 boot()

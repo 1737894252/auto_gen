@@ -447,21 +447,10 @@ function boot(){
     img.setAttribute('crossOrigin', 'anonymous'); // 确保跨域图片也能正常处理
     img.onload=()=>{
       bgImg=img;
-      // 获取canvas-wrap的最大可用宽度
-      const canvasWrap = stage.parentElement;
-      const maxAvailableWidth = canvasWrap.clientWidth;
       
-      // 使用图片原始尺寸作为画布尺寸
-      let targetWidth = img.width;
-      let targetHeight = img.height;
-      
-      // 如果图片宽度超过最大可用宽度，调整为最大可用宽度，高度按比例调整
-      // 保持画布在容器内可见
-      if (targetWidth > maxAvailableWidth) {
-        const scale = maxAvailableWidth / targetWidth;
-        targetWidth = maxAvailableWidth;
-        targetHeight = Math.round(img.height * scale);
-      }
+      // 直接使用图片原始尺寸作为画布尺寸
+      const targetWidth = img.width;
+      const targetHeight = img.height;
       
       // 设置画布尺寸
       setBgSize(targetWidth, targetHeight);

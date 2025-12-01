@@ -161,11 +161,12 @@ function boot(){
   function getFont(){const custom=fontCustom.value.trim();return custom||fontSelect.value||'Microsoft YaHei'}
   function positionOverlay(x,y){const maxX=stage.clientWidth-(overlay.clientWidth||0);const maxY=stage.clientHeight-(overlay.clientHeight||0);currentX=Math.max(0,Math.min(x,maxX));currentY=Math.max(0,Math.min(y,maxY));overlay.style.left=currentX+"px";overlay.style.top=currentY+"px"}
   
-  // 添加拖拽功能的鼠标事件监听器
+  // 添加拖拽功能的鼠标和触摸事件监听器
   let isDragging=false;
   let dragOffsetX=0;
   let dragOffsetY=0;
   
+  // 鼠标事件
   overlay.addEventListener('mousedown',(e)=>{
     isDragging=true;
     const rect=overlay.getBoundingClientRect();
@@ -190,6 +191,35 @@ function boot(){
     if(isDragging){
       isDragging=false;
       overlay.style.cursor='grab';
+    }
+  });
+  
+  // 触摸事件
+  overlay.addEventListener('touchstart',(e)=>{
+    isDragging=true;
+    const touch=e.touches[0];
+    const rect=overlay.getBoundingClientRect();
+    const stageRect=stage.getBoundingClientRect();
+    dragOffsetX=touch.clientX-rect.left;
+    dragOffsetY=touch.clientY-rect.top;
+    e.preventDefault();
+  });
+  
+  document.addEventListener('touchmove',(e)=>{
+    if(!isDragging)return;
+    const touch=e.touches[0];
+    const stageRect=stage.getBoundingClientRect();
+    const x=touch.clientX-stageRect.left-dragOffsetX;
+    const y=touch.clientY-stageRect.top-dragOffsetY;
+    positionOverlay(x,y);
+    updateCoords();
+    saveConfig();
+    e.preventDefault();
+  });
+  
+  document.addEventListener('touchend',()=>{
+    if(isDragging){
+      isDragging=false;
     }
   });
   function updateCoords(){const fx=currentX.toFixed(2),fy=currentY.toFixed(2);$("coords").textContent=`X: ${fx}, Y: ${fy}`}

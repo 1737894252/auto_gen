@@ -11,6 +11,15 @@
     <h1>中国居民委员会/村委会印章生成</h1>
     <div class="main-layout">
       <div class="canvas-wrap">
+        <!-- 画布顶部操作按钮 -->
+        <div class="canvas-top-buttons">
+          <label class="file-input-wrapper">
+            上传图片
+            <input id="bgImage" type="file" accept="image/*" />
+          </label>
+          <button id="download">下载PNG</button>
+        </div>
+        
         <div id="stage" class="stage">
           <canvas id="bgCanvas"></canvas>
           <img id="sealOverlay" alt="seal" draggable="false" ondragstart="return false" />
@@ -45,10 +54,6 @@
               <input id="serial" value="3610231000004" placeholder="例如：3610231000004" />
             </label>
             <div class="section-title">尺寸与样式</div>
-            <label>
-              背景图片
-              <input id="bgImage" type="file" accept="image/*" />
-            </label>
             <label>
               圆直径(px)
               <input id="diameter" type="range" min="100" max="800" value="500" />
@@ -149,8 +154,6 @@
                 <span class="range-value" id="bottomFontSizeValue">26</span>
               </label>
             </div>
-            <div class="section-title"></div>
-            <button id="download">下载PNG</button>
           </div>
         </div>
       </div>

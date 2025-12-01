@@ -486,7 +486,7 @@ function boot(){
     const ow = parseInt(diameter.value, 10);
     const oh = parseInt(diameter.value, 10);
     
-    // 获取当前的印章配置
+    // 使用与update函数完全相同的方式生成印章配置
     const sealOpts={
       type:type.value,
       topText:topText.value.trim()||"示例上弧文字",
@@ -494,11 +494,11 @@ function boot(){
       diameter:ow,
       ringWidth:parseInt(ringWidth.value,10),
       fontSize:parseInt(fontSize.value,10),
-      // 使用用户设置的上下弧字体大小和上弧字高
+      // 添加上下弧字体大小和上弧字高
       topFontSize:parseInt(topFontSize.value,10),
       topFontHeight:parseFloat(topFontHeight.value),
       bottomFontSize:parseInt(bottomFontSize.value,10),
-      fontFamily:getFont(),
+      fontFamily:(fontCustom.value.trim()||fontSelect.value||'Microsoft YaHei'),
       topStartDeg:parseFloat(topStartDeg.value),
       bottomStartDeg:parseFloat(bottomStartDeg.value),
       topOffset:parseFloat(topOffset.value),
@@ -524,8 +524,8 @@ function boot(){
     // 确保临时canvas有透明背景
     tempCtx.clearRect(0, 0, ow, oh);
     
-    // 在临时canvas上绘制印章
-    renderSealToCanvas(tempCtx, ow, sealOpts);
+    // 使用与update函数相同的renderSeal函数绘制印章
+    renderSeal(tempCtx, ow, sealOpts);
     
     // 如果启用了混合模式，在绘制印章时应用正片叠底效果
     if (blendOn) {

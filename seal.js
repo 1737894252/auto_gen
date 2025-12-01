@@ -480,20 +480,18 @@ function boot(){
     // 首先复制背景画布的内容，确保与显示完全一致
     ectx.drawImage(bgCanvas, 0, 0);
     
-    // 获取overlay元素的实际位置和尺寸，确保与显示完全一致
-    const rect = overlay.getBoundingClientRect();
-    const stageRect = stage.getBoundingClientRect();
-    const ox = rect.left - stageRect.left;
-    const oy = rect.top - stageRect.top;
-    const ow = rect.width;
-    const oh = rect.height;
+    // 使用currentX和currentY直接获取印章在画布上的实际位置
+    const ox = currentX;
+    const oy = currentY;
+    const ow = parseInt(diameter.value, 10);
+    const oh = parseInt(diameter.value, 10);
     
     // 获取当前的印章配置
     const sealOpts={
       type:type.value,
       topText:topText.value.trim()||"示例上弧文字",
       serial:serial.value.trim()||"0000000000000",
-      diameter:parseInt(diameter.value,10),
+      diameter:ow,
       ringWidth:parseInt(ringWidth.value,10),
       fontSize:parseInt(fontSize.value,10),
       // 使用用户设置的上下弧字体大小和上弧字高

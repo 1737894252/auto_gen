@@ -16,16 +16,19 @@
 .toolbar button{padding:8px 12px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
 .toolbar button#blendToggle.active{background:#e53935;color:#fff;border-color:#e53935}
 
-/* 操作空间样式 - 悬浮在画布上 */
+/* 操作空间样式 - 随着滚动条始终保持在右边且上下居中 */
 .controls-container{
-  position:absolute;
-  top:20px;
+  position:sticky;
+  top:50%;
   right:20px;
+  transform:translateY(-50%);
   display:flex;
   flex-direction:column;
   align-items:flex-end;
   z-index:100;
   width:320px;
+  height:fit-content;
+  margin-left:auto;
 }
 
 .controls-toggle{
@@ -68,9 +71,18 @@
   padding:16px;
 }
 
-/* 画布容器相对定位 */
-.canvas-wrap{
+/* 主布局调整 */
+.main-layout{
+  display:flex;
+  gap:24px;
+  align-items:flex-start;
   position:relative;
+}
+
+/* 画布容器 */
+.canvas-wrap{
+  flex:1;
+  min-width:400px;
 }
 
 /* 响应式布局 */
@@ -83,6 +95,7 @@
     width:100%;
     align-items:center;
     margin-top:20px;
+    transform:none;
   }
   .controls-box{
     max-height:none;

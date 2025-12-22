@@ -10,34 +10,35 @@ const $ = id => document.getElementById(id);
 // 噪点生成相关逻辑
 const noiseCanvas = document.createElement('canvas');
 const noiseCtx = noiseCanvas.getContext('2d');
+let noiseGenerated = false;
 
-function ensureNoise(w, h) {
-  if (noiseCanvas.width >= w && noiseCanvas.height >= h) return;
-  const newW = Math.max(noiseCanvas.width || 0, w);
-  const newH = Math.max(noiseCanvas.height || 0, h);
-  noiseCanvas.width = newW;
-  noiseCanvas.height = newH;
+function initNoise() {
+  if (noiseGenerated) return;
+  const size = 1024; // 足够覆盖最大印章尺寸(800)
+  noiseCanvas.width = size;
+  noiseCanvas.height = size;
   
   const ctx = noiseCtx;
-  ctx.clearRect(0, 0, newW, newH);
+  ctx.clearRect(0, 0, size, size);
   
   // 1. 生成大块斑驳 (Low frequency noise)
-  // 缩小画布生成随机点，然后拉伸，形成模糊块
   const scale = 20; 
-  const sw = Math.ceil(newW / scale);
-  const sh = Math.ceil(newH / scale);
+  const sw = Math.ceil(size / scale);
+  const sh = Math.ceil(size / scale);
   
   const tempC = document.createElement('canvas');
   tempC.width = sw;
   tempC.height = sh;
   const tempCtx = tempC.getContext('2d');
   
-  // 填充随机灰度
   const idata = tempCtx.createImageData(sw, sh);
-  const buf = new Uint32Array(idata.data.buffer);
-  for(let i=0; i<buf.length; i++) {
-     const v = Math.random() * 255;
-     buf[i] = (255 << 24) | (v << 16) | (v << 8) | v;
+  const buf = idata.data; // Uint8ClampedArray [r,g,b,a, r,g,b,a...]
+  for(let i=0; i<buf.length; i+=4) {
+     const v = Math.floor(Math.random() * 255);
+     buf[i] = v;   // R
+     buf[i+1] = v; // G
+     buf[i+2] = v; // B
+     buf[i+3] = 255; // A
   }
   tempCtx.putImageData(idata, 0, 0);
   
@@ -45,64 +46,71 @@ function ensureNoise(w, h) {
   ctx.save();
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(tempC, 0, 0, newW, newH);
+  ctx.drawImage(tempC, 0, 0, size, size);
   ctx.restore();
   
   // 2. 混合高频噪点 (High frequency noise)
-  // 使用 'hard-light' 或 'overlay' 混合模式叠加细微噪点
   const grainC = document.createElement('canvas');
-  grainC.width = newW;
-  grainC.height = newH;
+  grainC.width = size;
+  grainC.height = size;
   const grainCtx = grainC.getContext('2d');
-  const gData = grainCtx.createImageData(newW, newH);
-  const gBuf = new Uint32Array(gData.data.buffer);
-  for(let i=0; i<gBuf.length; i++) {
-     const v = Math.random() * 255;
-     gBuf[i] = (255 << 24) | (v << 16) | (v << 8) | v;
+  const gData = grainCtx.createImageData(size, size);
+  const gBuf = gData.data;
+  for(let i=0; i<gBuf.length; i+=4) {
+     const v = Math.floor(Math.random() * 255);
+     gBuf[i] = v;
+     gBuf[i+1] = v;
+     gBuf[i+2] = v;
+     gBuf[i+3] = 255;
   }
   grainCtx.putImageData(gData, 0, 0);
   
   ctx.globalCompositeOperation = "overlay";
   ctx.drawImage(grainC, 0, 0);
   
-  // 3. 阈值处理 (Thresholding) - 关键步骤
-  // 让灰度图变成黑白斑驳图，去除中间调，形成硬边缘
-  const finalData = ctx.getImageData(0, 0, newW, newH);
-  const fBuf = new Uint32Array(finalData.data.buffer);
-  for(let i=0; i<fBuf.length; i++) {
+  // 3. 阈值处理 (Thresholding)
+  const finalData = ctx.getImageData(0, 0, size, size);
+  const fBuf = finalData.data;
+  for(let i=0; i<fBuf.length; i+=4) {
      // 取蓝色通道作为灰度值
-     let v = fBuf[i] & 0xFF;
+     let v = fBuf[i+2];
      
-     // 增加对比度：让暗的更暗，亮的更亮
+     // 增加对比度
      v = (v - 100) * 3; 
      v = Math.max(0, Math.min(255, v));
      
-     // 将灰度转换为 Alpha 值 (黑色但在 Alpha 通道有变化)
-     fBuf[i] = (v << 24) | 0x000000;
+     // 设置为黑色，Alpha根据灰度决定
+     fBuf[i] = 0;   // R
+     fBuf[i+1] = 0; // G
+     fBuf[i+2] = 0; // B
+     fBuf[i+3] = v; // A
   }
   ctx.putImageData(finalData, 0, 0);
   ctx.globalCompositeOperation = "source-over"; // reset
+  
+  noiseGenerated = true;
 }
 
 function applyRoughness(ctx, d, roughness) {
   if (!roughness || roughness <= 0) return;
-  ensureNoise(d, d);
+  // 确保噪点已生成
+  if (!noiseGenerated) initNoise();
+  
   ctx.save();
-  // 使用 destination-out 擦除印章的部分像素
   ctx.globalCompositeOperation = "destination-out";
-  // 根据做旧程度调整透明度，最大0.95
   ctx.globalAlpha = Math.min(0.95, (roughness / 100) * 1.2); 
   
-  // 绘制噪声图
-  ctx.drawImage(noiseCanvas, 0, 0, d, d);
+  // 从大纹理中截取对应大小的区域
+  // 使用 d, d 作为源和目标尺寸，保证纹理比例一致
+  ctx.drawImage(noiseCanvas, 0, 0, d, d, 0, 0, d, d);
   
-  // 如果做旧程度很高，再叠加一次错位的噪声，增加随机感
   if (roughness > 50) {
       ctx.globalAlpha = (roughness - 50) / 100 * 0.5;
       const offset = d * 0.2;
       ctx.translate(offset, offset);
       ctx.rotate(1);
-      ctx.drawImage(noiseCanvas, -d/2, -d/2, d*1.5, d*1.5);
+      // 旋转层也使用截取的方式，确保不越界
+      ctx.drawImage(noiseCanvas, 0, 0, d, d, -d/2, -d/2, d*1.5, d*1.5);
   }
   
   ctx.restore();
@@ -789,16 +797,141 @@ function boot() {
   // 添加操作空间开关事件监听器
   if (controlsToggle && controlsBox) {
     controlsToggle.addEventListener('click', () => {
-      controlsBox.classList.toggle('open');
+      // 切换display状态而不是class
+      const isHidden = controlsBox.style.display === 'none';
+      controlsBox.style.display = isHidden ? 'block' : 'none';
+      // 如果打开了控制面板，关闭历史记录面板，避免遮挡
+      if (isHidden && historyPanel) {
+        historyPanel.style.display = 'none';
+      }
     });
 
     // 默认打开操作空间，但在移动端（宽度小于1200px）默认关闭
     if (window.innerWidth >= 1200) {
-      controlsBox.classList.add('open');
+      controlsBox.style.display = 'block';
     } else {
-      controlsBox.classList.remove('open');
+      controlsBox.style.display = 'none';
     }
   }
+
+  // --- 历史记录功能实现 ---
+  const historyPanel = $("historyPanel");
+  const historyList = $("historyList");
+  const closeHistoryBtn = $("closeHistoryBtn");
+  
+  // 显示生成历史按钮
+
+  function captureConfig() {
+    return {
+      type: type.value,
+      topText: topText.value,
+      serial: serial.value,
+      diameter: diameter.value,
+      ringWidth: ringWidth.value,
+      fontSize: fontSize.value,
+      fontSelect: fontSelect.value,
+      fontCustom: fontCustom.value,
+      sealRotation: sealRotation.value,
+      roughness: roughness.value,
+      topStartDeg: topStartDeg.value,
+      topOffset: topOffset.value,
+      topSpacing: topSpacing.value,
+      topRotateDeg: topRotateDeg.value,
+      topFontSize: topFontSize.value,
+      topFontHeight: topFontHeight.value,
+      bottomStartDeg: bottomStartDeg.value,
+      bottomOffset: bottomOffset.value,
+      bottomSpacing: bottomSpacing.value,
+      bottomFontSize: bottomFontSize.value,
+      blendOn: blendOn,
+      overlayX: currentX,
+      overlayY: currentY
+    };
+  }
+
+  function getHistory() {
+    try {
+      return JSON.parse(localStorage.getItem("sealHistory") || "[]");
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveHistoryItem(item) {
+    const history = getHistory();
+    history.unshift(item); // Add to top
+    // Limit to 20 items
+    if (history.length > 20) history.pop();
+    localStorage.setItem("sealHistory", JSON.stringify(history));
+  }
+
+  function deleteHistoryItem(index) {
+    const history = getHistory();
+    history.splice(index, 1);
+    localStorage.setItem("sealHistory", JSON.stringify(history));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    if (!historyList) return;
+    const history = getHistory();
+    historyList.innerHTML = "";
+    if (history.length === 0) {
+      historyList.innerHTML = '<div style="text-align:center;color:#999;padding:20px;font-size:14px;">暂无历史记录</div>';
+      return;
+    }
+
+    history.forEach((item, index) => {
+      const div = document.createElement("div");
+      div.className = "history-item";
+      div.innerHTML = `
+        <img src="${item.image}" alt="Seal">
+        <div class="history-info">
+          <div class="history-desc">${item.config.topText || '未命名'}</div>
+          <div class="history-time">${item.timestamp}</div>
+        </div>
+        <div class="history-delete" title="删除">×</div>
+      `;
+      
+      div.querySelector(".history-delete").addEventListener("click", (e) => {
+        e.stopPropagation();
+        if(confirm("确定删除这条记录吗？")) {
+          deleteHistoryItem(index);
+        }
+      });
+
+      div.addEventListener("click", () => {
+        if(confirm("确定要恢复这个印章配置吗？当前未保存的修改将丢失。")) {
+          applyInputs(item.config);
+          update();
+          // 移动端恢复配置后，如果控制面板关闭，则自动打开以便查看参数
+          if (window.innerWidth < 1200 && controlsBox && controlsBox.style.display === 'none') {
+             controlsBox.style.display = 'block';
+             historyPanel.style.display = 'none'; // Close history to show controls
+          }
+        }
+      });
+
+      historyList.appendChild(div);
+    });
+  }
+
+  
+
+  if (closeHistoryBtn) {
+    closeHistoryBtn.addEventListener("click", () => {
+      if (historyPanel) historyPanel.style.display = "none";
+    });
+  }
+  
+  
+  // 这里暂时只在生成时打开，或者添加一个“查看历史”按钮？
+  // 用户需求是“点击生成...放到历史记录里”，所以目前的逻辑符合。
+  // 为了方便用户查看，可以添加一个额外的“查看历史”按钮，或者让“生成到历史”按钮兼具打开功能（如果不生成）
+  // 但为了简单，先保持这样。用户生成后会自动打开列表。
+  
+  // 初始渲染
+  renderHistory();
 
   let cfg = loadConfig();
   if (!cfg) {

@@ -23,6 +23,7 @@
   align-items:center;
   justify-content:flex-start;
   margin-bottom:16px;
+  flex-wrap: wrap; /* Allow wrapping on small screens */
 }
 
 .file-input-wrapper{
@@ -86,7 +87,7 @@
   flex-direction:column;
   align-items:flex-end;
   z-index:100;
-  width:320px;
+  width:500px;
   height:fit-content;
   flex-shrink:0;
 }
@@ -153,17 +154,28 @@
   .controls-container{
     position:static;
     width:100%;
-    align-items:center;
+    align-items:stretch;
     margin-top:20px;
     transform:none;
   }
   .controls-box{
-    max-height:none;
-    opacity:1;
-    visibility:visible;
-    padding:16px;
+    /* Revert to default collapsible state */
+    /* The base CSS handles the hidden state */
+    width: 100%;
+    box-sizing: border-box;
   }
-  .controls-toggle{display:none}
+  .controls-box.open {
+    max-height: none; /* Allow full height when open */
+    padding: 16px;
+  }
+  .controls-toggle{
+    display:block;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 @media (max-width:768px){
@@ -172,51 +184,88 @@
   .stage{max-width:100%}
 }
 
-/* 手机端优化 */
+/* 手机端优化 - 更紧凑的布局 */
 @media (max-width:480px){
-  .container{margin:16px auto;padding:0 12px}
-  .main-layout{gap:16px}
-  .controls{gap:16px}
-  .section-title{margin-top:12px;font-size:18px}
-  .controls label{gap:8px;font-size:16px}
+  h1 {
+    font-size: 16px;
+    text-align: center;
+    margin: 12px 0;
+  }
+  .container{margin:8px auto;padding:0 8px}
+  .main-layout{gap:12px}
+  .controls{gap:12px}
+  .section-title{margin-top:10px;font-size:16px}
+  .controls label{gap:4px;font-size:14px}
   .controls input[type="text"],
   .controls input[type="number"],
   .controls select{
-    padding:12px;
-    font-size:16px;
-    border-radius:8px;
+    padding:8px;
+    font-size:14px;
+    border-radius:6px;
   }
   .controls input[type="range"]{
-    height:6px;
-    margin:12px 0;
+    height:4px;
+    margin:8px 0;
   }
   .controls input[type="range"]::-webkit-slider-thumb{
-    width:24px;
-    height:24px;
+    width:20px;
+    height:20px;
   }
   .controls input[type="range"]::-moz-range-thumb{
-    width:24px;
-    height:24px;
+    width:20px;
+    height:20px;
   }
-  .range-value{margin-left:12px;font-size:16px;width:70px}
+  .range-value{margin-left:8px;font-size:14px;width:50px}
   .controls button{
-    padding:14px 20px;
-    font-size:16px;
-    border-radius:8px;
-  }
-  .canvas-wrap{padding:12px}
-  .toolbar{
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:16px;
-  }
-  .toolbar button{
     padding:10px 16px;
     font-size:14px;
+    border-radius:6px;
+  }
+  .canvas-wrap{padding:8px; border-radius: 8px;}
+  .toolbar{
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+  .toolbar button{
+    padding:6px 10px;
+    font-size:13px;
   }
   #coords,
   #canvasSize{
-    font-size:14px;
+    font-size:12px;
     white-space:nowrap;
+  }
+  
+  /* 顶部按钮也更紧凑 */
+  .canvas-top-buttons{
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .primary-btn, .file-input-wrapper{
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+/* 针对特别小的屏幕 (如旧款安卓/iPhone SE) */
+@media (max-width:360px){
+  .container{padding:0 4px; margin: 4px auto;}
+  .canvas-wrap{padding:4px; border-radius: 6px;}
+  .controls input[type="text"],
+  .controls input[type="number"],
+  .controls select{
+    padding:6px;
+    font-size:13px;
+  }
+  .controls label{font-size:13px}
+  .section-title{font-size:15px; margin-top:8px;}
+  .primary-btn, .file-input-wrapper{
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .toolbar button{
+    padding:5px 8px;
+    font-size:12px;
   }
 }

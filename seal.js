@@ -7,6 +7,107 @@ const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 const $ = id => document.getElementById(id);
 
+// 噪点生成相关逻辑
+const noiseCanvas = document.createElement('canvas');
+const noiseCtx = noiseCanvas.getContext('2d');
+
+function ensureNoise(w, h) {
+  if (noiseCanvas.width >= w && noiseCanvas.height >= h) return;
+  const newW = Math.max(noiseCanvas.width || 0, w);
+  const newH = Math.max(noiseCanvas.height || 0, h);
+  noiseCanvas.width = newW;
+  noiseCanvas.height = newH;
+  
+  const ctx = noiseCtx;
+  ctx.clearRect(0, 0, newW, newH);
+  
+  // 1. 生成大块斑驳 (Low frequency noise)
+  // 缩小画布生成随机点，然后拉伸，形成模糊块
+  const scale = 20; 
+  const sw = Math.ceil(newW / scale);
+  const sh = Math.ceil(newH / scale);
+  
+  const tempC = document.createElement('canvas');
+  tempC.width = sw;
+  tempC.height = sh;
+  const tempCtx = tempC.getContext('2d');
+  
+  // 填充随机灰度
+  const idata = tempCtx.createImageData(sw, sh);
+  const buf = new Uint32Array(idata.data.buffer);
+  for(let i=0; i<buf.length; i++) {
+     const v = Math.random() * 255;
+     buf[i] = (255 << 24) | (v << 16) | (v << 8) | v;
+  }
+  tempCtx.putImageData(idata, 0, 0);
+  
+  // 拉伸绘制到主噪声画布
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(tempC, 0, 0, newW, newH);
+  ctx.restore();
+  
+  // 2. 混合高频噪点 (High frequency noise)
+  // 使用 'hard-light' 或 'overlay' 混合模式叠加细微噪点
+  const grainC = document.createElement('canvas');
+  grainC.width = newW;
+  grainC.height = newH;
+  const grainCtx = grainC.getContext('2d');
+  const gData = grainCtx.createImageData(newW, newH);
+  const gBuf = new Uint32Array(gData.data.buffer);
+  for(let i=0; i<gBuf.length; i++) {
+     const v = Math.random() * 255;
+     gBuf[i] = (255 << 24) | (v << 16) | (v << 8) | v;
+  }
+  grainCtx.putImageData(gData, 0, 0);
+  
+  ctx.globalCompositeOperation = "overlay";
+  ctx.drawImage(grainC, 0, 0);
+  
+  // 3. 阈值处理 (Thresholding) - 关键步骤
+  // 让灰度图变成黑白斑驳图，去除中间调，形成硬边缘
+  const finalData = ctx.getImageData(0, 0, newW, newH);
+  const fBuf = new Uint32Array(finalData.data.buffer);
+  for(let i=0; i<fBuf.length; i++) {
+     // 取蓝色通道作为灰度值
+     let v = fBuf[i] & 0xFF;
+     
+     // 增加对比度：让暗的更暗，亮的更亮
+     v = (v - 100) * 3; 
+     v = Math.max(0, Math.min(255, v));
+     
+     // 将灰度转换为 Alpha 值 (黑色但在 Alpha 通道有变化)
+     fBuf[i] = (v << 24) | 0x000000;
+  }
+  ctx.putImageData(finalData, 0, 0);
+  ctx.globalCompositeOperation = "source-over"; // reset
+}
+
+function applyRoughness(ctx, d, roughness) {
+  if (!roughness || roughness <= 0) return;
+  ensureNoise(d, d);
+  ctx.save();
+  // 使用 destination-out 擦除印章的部分像素
+  ctx.globalCompositeOperation = "destination-out";
+  // 根据做旧程度调整透明度，最大0.95
+  ctx.globalAlpha = Math.min(0.95, (roughness / 100) * 1.2); 
+  
+  // 绘制噪声图
+  ctx.drawImage(noiseCanvas, 0, 0, d, d);
+  
+  // 如果做旧程度很高，再叠加一次错位的噪声，增加随机感
+  if (roughness > 50) {
+      ctx.globalAlpha = (roughness - 50) / 100 * 0.5;
+      const offset = d * 0.2;
+      ctx.translate(offset, offset);
+      ctx.rotate(1);
+      ctx.drawImage(noiseCanvas, -d/2, -d/2, d*1.5, d*1.5);
+  }
+  
+  ctx.restore();
+}
+
 stage.addEventListener('wheel', e => { e.preventDefault(); const diameterEl = $('diameter'); if (!diameterEl) return; const cur = parseInt(diameterEl.value, 10); const min = parseInt(diameterEl.min || '300', 10); const max = parseInt(diameterEl.max || '800', 10); const factor = e.deltaY < 0 ? 1.06 : 0.94; let next = Math.round(cur * factor); next = Math.max(min, Math.min(max, next)); const curLeft = parseFloat(overlay.style.left || '0'); const curTop = parseFloat(overlay.style.top || '0'); const centerX = curLeft + (overlay.clientWidth || cur) / 2; const centerY = curTop + (overlay.clientHeight || cur) / 2; const newW = next; const newH = next; let newX = centerX - newW / 2; let newY = centerY - newH / 2; const maxX = stage.clientWidth - newW; const maxY = stage.clientHeight - newH; newX = Math.max(0, Math.min(newX, maxX)); newY = Math.max(0, Math.min(newY, maxY)); const once = () => { overlay.removeEventListener('load', once); overlay.style.left = newX + 'px'; overlay.style.top = newY + 'px' }; overlay.addEventListener('load', once); diameterEl.value = String(next); const evt = new Event('input', { bubbles: true }); diameterEl.dispatchEvent(evt) });
 
 function setCanvasSize(d) { canvas.width = d; canvas.height = d }
@@ -55,6 +156,9 @@ function renderSeal(ctx, d, opts) {// 确保画布有透明背景
   const serialRadius = d / 2 - opts.ringWidth / 2 - opts.bottomOffset;
   drawArcText(ctx, serialText, cx, cy, serialRadius, bottomStart, bottomEnd, serialSize, fontFamily, color, true, "tangent", 0);
 
+  // 应用做旧效果
+  applyRoughness(ctx, d, opts.roughness);
+
   ctx.restore();
 }
 function renderSealToCanvas(cctx, d, opts) {// 确保画布有透明背景
@@ -88,6 +192,9 @@ function renderSealToCanvas(cctx, d, opts) {// 确保画布有透明背景
   const bottomStart = toRad(opts.bottomStartDeg || 225); const bottomEnd = bottomStart - bottomSpan;
   const serialRadius = d / 2 - opts.ringWidth / 2 - opts.bottomOffset;
   drawArcText(cctx, serialText, cx, cy, serialRadius, bottomStart, bottomEnd, opts.bottomFontSize, fontFamily, color, true, "tangent", 0);
+
+  // 应用做旧效果
+  applyRoughness(cctx, d, opts.roughness);
 
   cctx.restore();
 }
@@ -143,17 +250,21 @@ function boot() {
   const bottomFontSize = $("bottomFontSize");
   // 添加印章旋转控制
   const sealRotation = $("sealRotation");
+  // 添加做旧程度控制
+  const roughness = $("roughness");
   // 添加操作空间开关控制
   const controlsToggle = $("controlsToggle");
   const controlsBox = $("controlsBox");
   let currentX = 0, currentY = 0;
-  let blendOn = false;
+  // 默认为true
+  let blendOn = true;
 
   // 获取所有range-value元素
   const diameterValue = $("diameterValue");
   const ringWidthValue = $("ringWidthValue");
   const fontSizeValue = $("fontSizeValue");
   const sealRotationValue = $("sealRotationValue");
+  const roughnessValue = $("roughnessValue");
   const topStartDegValue = $("topStartDegValue");
   const topOffsetValue = $("topOffsetValue");
   const topSpacingValue = $("topSpacingValue");
@@ -173,6 +284,7 @@ function boot() {
       ringWidth: "7",
       fontSize: "18",
       sealRotation: "0",
+      roughness: "0",
 
       topStartDeg: "175",
       topOffset: "16",
@@ -383,6 +495,7 @@ function boot() {
     if (cfg.overlayX != null) currentX = parseFloat(cfg.overlayX);
     if (cfg.overlayY != null) currentY = parseFloat(cfg.overlayY);
     if (cfg.blendOn != null) setBlend(!!cfg.blendOn)
+    else setBlend(true); // 默认启用
   }
   function buildOpts() {
     return {
@@ -429,7 +542,9 @@ function boot() {
       bottomSpacing: parseFloat(bottomSpacing.value),
       topRotateDeg: parseFloat(topRotateDeg.value),
       // 添加印章旋转角度
-      rotation: parseFloat(sealRotation?.value || 0)
+      rotation: parseFloat(sealRotation?.value || 0),
+      // 添加做旧程度
+      roughness: parseInt(roughness.value, 10)
     };
 
     // 更新所有range-value显示
@@ -437,6 +552,7 @@ function boot() {
     ringWidthValue.textContent = ringWidth.value;
     fontSizeValue.textContent = fontSize.value;
     sealRotationValue.textContent = sealRotation?.value || 0;
+    roughnessValue.textContent = roughness.value;
     topStartDegValue.textContent = topStartDeg.value;
     topOffsetValue.textContent = topOffset.value;
     topSpacingValue.textContent = parseFloat(topSpacing.value).toFixed(2);
@@ -495,6 +611,7 @@ function boot() {
   bottomFontSize.addEventListener("input", update);
   // 添加印章旋转的事件监听器
   sealRotation?.addEventListener("input", update);
+  roughness.addEventListener("input", update);
   blendToggle.addEventListener("click", () => {
     setBlend(!blendOn);
     saveConfig();
@@ -609,7 +726,8 @@ function boot() {
       topSpacing: parseFloat(topSpacing.value),
       bottomSpacing: parseFloat(bottomSpacing.value),
       topRotateDeg: parseFloat(topRotateDeg.value),
-      rotation: parseFloat(sealRotation?.value || 0)
+      rotation: parseFloat(sealRotation?.value || 0),
+      roughness: parseInt(roughness.value, 10)
     };
 
     // 创建临时高分辨率画布渲染印章
@@ -685,6 +803,8 @@ function boot() {
   let cfg = loadConfig();
   if (!cfg) {
     cfg = getResponsiveDefaults();
+    // 默认启用混合模式
+    cfg.blendOn = true;
   }
   applyInputs(cfg);
   update();

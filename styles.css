@@ -4,9 +4,10 @@
   src: url('simsun.ttc') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
-.container{max-width:1400px;margin:24px auto;padding:0 16px;font-family:"Microsoft YaHei","Noto Sans SC","SimSun",LocalSimSun,sans-serif;color:#222}
+.container{max-width:1400px;margin:24px auto;padding:0 16px;font-family:"Microsoft YaHei","Noto Sans SC","SimSun","LocalSimSun",sans-serif;color:#222}
 .range-value{display:inline-block;margin-left:8px;font-weight:bold;color:#666;width:60px;text-align:right}
 .main-layout{display:flex;gap:24px;align-items:flex-start}
 .controls{display:grid;grid-template-columns:repeat(2,minmax(200px,1fr));gap:12px;align-items:end;flex:1;max-width:500px}

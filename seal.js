@@ -126,9 +126,9 @@ function drawCircle(ctx, cx, cy, r, lineWidth, color) { ctx.beginPath(); ctx.arc
 
 function splitChars(s) { return Array.from(s) }
 
-function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px ${fontFamily}`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
+function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'LocalSimSun', 'SimSun', serif`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
 
-function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px ${fontFamily}`; ctx.fillText(text, cx, cy); ctx.restore() }
+function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'LocalSimSun', 'SimSun', serif`; ctx.fillText(text, cx, cy); ctx.restore() }
 
 // 修复renderSeal函数，确保正确接收ctx参数并设置透明背景
 function renderSeal(ctx, d, opts) {// 确保画布有透明背景
@@ -242,8 +242,7 @@ function boot() {
   const bottomOffset = $("bottomOffset");
   const topSpacing = $("topSpacing");
   const bottomSpacing = $("bottomSpacing");
-  const fontSelect = $("fontSelect");
-  const fontCustom = $("fontCustom");
+  
   const topRotateDeg = $("topRotateDeg");
   const blendToggle = $("blendToggle");
   const resetState = $("resetState");
@@ -294,7 +293,7 @@ function boot() {
       sealRotation: "0",
       roughness: "0",
 
-      topStartDeg: "166",
+      topStartDeg: "170",
       topOffset: "20",
       topSpacing: "1.06",
       topRotateDeg: "100",
@@ -309,12 +308,11 @@ function boot() {
       type: "居民委员会",
       topText: "赣州市南昌县琴城镇新建社区",
       serial: "3610231000004",
-      fontSelect: "LocalSimSun",
-      fontCustom: "",
+      
     };
   }
 
-  function getFont() { const custom = fontCustom.value.trim(); return custom || fontSelect.value || 'LocalSimSun' }
+  function getFont() { return 'LocalSimSun' }
   function positionOverlay(x, y) { const maxX = stage.clientWidth - (overlay.clientWidth || 0); const maxY = stage.clientHeight - (overlay.clientHeight || 0); currentX = Math.max(0, Math.min(x, maxX)); currentY = Math.max(0, Math.min(y, maxY)); overlay.style.left = currentX + "px"; overlay.style.top = currentY + "px" }
 
   // 添加拖拽功能的鼠标和触摸事件监听器
@@ -550,7 +548,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: (fontCustom.value.trim() || fontSelect.value || 'SimSun'),
+      fontFamily: 'LocalSimSun',
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -619,8 +617,7 @@ function boot() {
   bottomOffset.addEventListener("input", update);
   topSpacing.addEventListener("input", update);
   bottomSpacing.addEventListener("input", update);
-  fontSelect.addEventListener("change", update);
-  fontCustom.addEventListener("input", update);
+  
   topRotateDeg.addEventListener("input", update);
   // 添加上下弧字体大小和上弧字高的事件监听器
   topFontSize.addEventListener("input", update);
@@ -665,7 +662,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: (fontCustom.value.trim() || fontSelect.value || 'SimSun'),
+      fontFamily: 'LocalSimSun',
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -774,7 +771,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: (fontCustom.value.trim() || fontSelect.value || 'SimSun'),
+      fontFamily: 'LocalSimSun',
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -882,8 +879,7 @@ function boot() {
       diameter: diameter.value,
       ringWidth: ringWidth.value,
       fontSize: fontSize.value,
-      fontSelect: fontSelect.value,
-      fontCustom: fontCustom.value,
+      
       sealRotation: sealRotation.value,
       roughness: roughness.value,
       topStartDeg: topStartDeg.value,

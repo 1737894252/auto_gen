@@ -17,38 +17,38 @@ function initNoise() {
   const size = 1024; // 足够覆盖最大印章尺寸(800)
   noiseCanvas.width = size;
   noiseCanvas.height = size;
-  
+
   const ctx = noiseCtx;
   ctx.clearRect(0, 0, size, size);
-  
+
   // 1. 生成大块斑驳 (Low frequency noise)
-  const scale = 20; 
+  const scale = 20;
   const sw = Math.ceil(size / scale);
   const sh = Math.ceil(size / scale);
-  
+
   const tempC = document.createElement('canvas');
   tempC.width = sw;
   tempC.height = sh;
   const tempCtx = tempC.getContext('2d');
-  
+
   const idata = tempCtx.createImageData(sw, sh);
   const buf = idata.data; // Uint8ClampedArray [r,g,b,a, r,g,b,a...]
-  for(let i=0; i<buf.length; i+=4) {
-     const v = Math.floor(Math.random() * 255);
-     buf[i] = v;   // R
-     buf[i+1] = v; // G
-     buf[i+2] = v; // B
-     buf[i+3] = 255; // A
+  for (let i = 0; i < buf.length; i += 4) {
+    const v = Math.floor(Math.random() * 255);
+    buf[i] = v;   // R
+    buf[i + 1] = v; // G
+    buf[i + 2] = v; // B
+    buf[i + 3] = 255; // A
   }
   tempCtx.putImageData(idata, 0, 0);
-  
+
   // 拉伸绘制到主噪声画布
   ctx.save();
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(tempC, 0, 0, size, size);
   ctx.restore();
-  
+
   // 2. 混合高频噪点 (High frequency noise)
   const grainC = document.createElement('canvas');
   grainC.width = size;
@@ -56,38 +56,38 @@ function initNoise() {
   const grainCtx = grainC.getContext('2d');
   const gData = grainCtx.createImageData(size, size);
   const gBuf = gData.data;
-  for(let i=0; i<gBuf.length; i+=4) {
-     const v = Math.floor(Math.random() * 255);
-     gBuf[i] = v;
-     gBuf[i+1] = v;
-     gBuf[i+2] = v;
-     gBuf[i+3] = 255;
+  for (let i = 0; i < gBuf.length; i += 4) {
+    const v = Math.floor(Math.random() * 255);
+    gBuf[i] = v;
+    gBuf[i + 1] = v;
+    gBuf[i + 2] = v;
+    gBuf[i + 3] = 255;
   }
   grainCtx.putImageData(gData, 0, 0);
-  
+
   ctx.globalCompositeOperation = "overlay";
   ctx.drawImage(grainC, 0, 0);
-  
+
   // 3. 阈值处理 (Thresholding)
   const finalData = ctx.getImageData(0, 0, size, size);
   const fBuf = finalData.data;
-  for(let i=0; i<fBuf.length; i+=4) {
-     // 取蓝色通道作为灰度值
-     let v = fBuf[i+2];
-     
-     // 增加对比度
-     v = (v - 100) * 3; 
-     v = Math.max(0, Math.min(255, v));
-     
-     // 设置为黑色，Alpha根据灰度决定
-     fBuf[i] = 0;   // R
-     fBuf[i+1] = 0; // G
-     fBuf[i+2] = 0; // B
-     fBuf[i+3] = v; // A
+  for (let i = 0; i < fBuf.length; i += 4) {
+    // 取蓝色通道作为灰度值
+    let v = fBuf[i + 2];
+
+    // 增加对比度
+    v = (v - 100) * 3;
+    v = Math.max(0, Math.min(255, v));
+
+    // 设置为黑色，Alpha根据灰度决定
+    fBuf[i] = 0;   // R
+    fBuf[i + 1] = 0; // G
+    fBuf[i + 2] = 0; // B
+    fBuf[i + 3] = v; // A
   }
   ctx.putImageData(finalData, 0, 0);
   ctx.globalCompositeOperation = "source-over"; // reset
-  
+
   noiseGenerated = true;
 }
 
@@ -95,24 +95,24 @@ function applyRoughness(ctx, d, roughness) {
   if (!roughness || roughness <= 0) return;
   // 确保噪点已生成
   if (!noiseGenerated) initNoise();
-  
+
   ctx.save();
   ctx.globalCompositeOperation = "destination-out";
-  ctx.globalAlpha = Math.min(0.95, (roughness / 100) * 1.2); 
-  
+  ctx.globalAlpha = Math.min(0.95, (roughness / 100) * 1.2);
+
   // 从大纹理中截取对应大小的区域
   // 使用 d, d 作为源和目标尺寸，保证纹理比例一致
   ctx.drawImage(noiseCanvas, 0, 0, d, d, 0, 0, d, d);
-  
+
   if (roughness > 50) {
-      ctx.globalAlpha = (roughness - 50) / 100 * 0.5;
-      const offset = d * 0.2;
-      ctx.translate(offset, offset);
-      ctx.rotate(1);
-      // 旋转层也使用截取的方式，确保不越界
-      ctx.drawImage(noiseCanvas, 0, 0, d, d, -d/2, -d/2, d*1.5, d*1.5);
+    ctx.globalAlpha = (roughness - 50) / 100 * 0.5;
+    const offset = d * 0.2;
+    ctx.translate(offset, offset);
+    ctx.rotate(1);
+    // 旋转层也使用截取的方式，确保不越界
+    ctx.drawImage(noiseCanvas, 0, 0, d, d, -d / 2, -d / 2, d * 1.5, d * 1.5);
   }
-  
+
   ctx.restore();
 }
 
@@ -290,31 +290,31 @@ function boot() {
     return {
       diameter: "200",
       ringWidth: "7",
-      fontSize: "18",
+      fontSize: "20",
       sealRotation: "0",
       roughness: "0",
 
-      topStartDeg: "175",
-      topOffset: "16",
-      topSpacing: "1.0",
+      topStartDeg: "166",
+      topOffset: "20",
+      topSpacing: "1.06",
       topRotateDeg: "100",
       topFontSize: "22",
-      topFontHeight: "1.1",
+      topFontHeight: "1.5",
 
-      bottomStartDeg: "130",
-      bottomOffset: "14",
-      bottomSpacing: "0.6",
+      bottomStartDeg: "126",
+      bottomOffset: "13",
+      bottomSpacing: "0.54",
       bottomFontSize: "16",
 
       type: "居民委员会",
       topText: "赣州市南昌县琴城镇新建社区",
       serial: "3610231000004",
-      fontSelect: "SimSun",
+      fontSelect: "LocalSimSun",
       fontCustom: "",
     };
   }
 
-  function getFont() { const custom = fontCustom.value.trim(); return custom || fontSelect.value || 'Microsoft YaHei' }
+  function getFont() { const custom = fontCustom.value.trim(); return custom || fontSelect.value || 'LocalSimSun' }
   function positionOverlay(x, y) { const maxX = stage.clientWidth - (overlay.clientWidth || 0); const maxY = stage.clientHeight - (overlay.clientHeight || 0); currentX = Math.max(0, Math.min(x, maxX)); currentY = Math.max(0, Math.min(y, maxY)); overlay.style.left = currentX + "px"; overlay.style.top = currentY + "px" }
 
   // 添加拖拽功能的鼠标和触摸事件监听器
@@ -471,12 +471,21 @@ function boot() {
   function updateCoords() { const fx = currentX.toFixed(2), fy = currentY.toFixed(2); $("coords").textContent = `X: ${fx}, Y: ${fy}` }
   function setBlend(active) { overlay.style.mixBlendMode = active ? "multiply" : "normal"; blendOn = active; blendToggle.classList.toggle("active", active) }
   function saveConfig() {
-    // 配置保存功能已移除
-    return;
+    try {
+      const config = captureConfig();
+      localStorage.setItem("sealConfig", JSON.stringify(config));
+    } catch (e) {
+      console.error("保存配置失败:", e);
+    }
   }
   function loadConfig() {
-    // 配置加载功能已移除
-    return null;
+    try {
+      const config = localStorage.getItem("sealConfig");
+      return config ? JSON.parse(config) : null;
+    } catch (e) {
+      console.error("加载配置失败:", e);
+      return null;
+    }
   }
   function applyInputs(cfg) {
     if (!cfg) return;
@@ -629,14 +638,53 @@ function boot() {
   });
   // 分步流程逻辑
 
-  // 1. 设计完成按钮点击事件 - 显示上传图片按钮
+  // 设计完成按钮点击事件 - 直接下载印章
   designCompleteBtn.addEventListener("click", () => {
-    // 显示上传图片按钮
-    uploadWrapper.style.display = 'inline-block';
-    // 隐藏设计完成按钮
-    designCompleteBtn.style.display = 'none';
-    // 提示用户上传图片
-    alert('设计已完成，请上传图片来应用印章');
+    // 1. 首先保存当前配置，确保用户设置不会丢失
+    saveConfig();
+
+    // 2. 创建一个画布，尺寸与印章直径相同
+    const exp = document.createElement("canvas");
+    const sealSize = parseInt(diameter.value, 10);
+    exp.width = sealSize;
+    exp.height = sealSize;
+    const ectx = exp.getContext("2d");
+
+    // 3. 启用高质量图像平滑
+    ectx.imageSmoothingEnabled = true;
+    ectx.imageSmoothingQuality = 'high';
+
+    // 4. 重构opts对象，用于渲染高分辨率印章
+    const opts = {
+      type: type.value,
+      topText: topText.value.trim() || "赣州市南昌县琴城镇新建社区",
+      serial: serial.value.trim() || "3610231000004",
+      diameter: sealSize,
+      ringWidth: parseInt(ringWidth.value, 10),
+      fontSize: parseInt(fontSize.value, 10),
+      topFontSize: parseInt(topFontSize.value, 10),
+      topFontHeight: parseFloat(topFontHeight.value),
+      bottomFontSize: parseInt(bottomFontSize.value, 10),
+      fontFamily: (fontCustom.value.trim() || fontSelect.value || 'SimSun'),
+      topStartDeg: parseFloat(topStartDeg.value),
+      bottomStartDeg: parseFloat(bottomStartDeg.value),
+      topOffset: parseFloat(topOffset.value),
+      bottomOffset: parseFloat(bottomOffset.value),
+      topSpacing: parseFloat(topSpacing.value),
+      bottomSpacing: parseFloat(bottomSpacing.value),
+      topRotateDeg: parseFloat(topRotateDeg.value),
+      rotation: parseFloat(sealRotation?.value || 0),
+      roughness: parseInt(roughness.value, 10)
+    };
+
+    // 5. 直接渲染印章到画布
+    renderSealToCanvas(ectx, sealSize, opts);
+
+    // 6. 生成高质量的PNG图片，使用最高质量参数
+    const a = document.createElement("a");
+    a.href = exp.toDataURL("image/png", 1.0); // 使用最高质量参数
+    a.download = `${topText.value.trim() || "示例"}-${type.value}-印章.png`;
+    a.click();
   });
 
   // 2. 上传图片事件 - 显示保存按钮
@@ -745,13 +793,13 @@ function boot() {
     tempCanvas.width = targetSize;
     tempCanvas.height = targetSize;
     const tempCtx = tempCanvas.getContext("2d");
-    
+
     // 计算缩放比例
     const ratio = targetSize / opts.diameter;
-    
+
     // 缩放上下文以匹配目标尺寸
     tempCtx.scale(ratio, ratio);
-    
+
     // 渲染印章到临时画布
     renderSealToCanvas(tempCtx, opts.diameter, opts);
 
@@ -778,10 +826,15 @@ function boot() {
     }, 1000);
   });
 
+  // 隐藏不需要的上传和保存按钮
+  uploadWrapper.style.display = 'none';
+  saveBtn.style.display = 'none';
+
   // 保留原有的下载按钮事件，确保兼容性
   if (downloadBtn) {
     downloadBtn.addEventListener("click", () => {
-      saveBtn.click();
+      // 直接触发设计完成按钮的点击事件，实现下载功能
+      designCompleteBtn.click();
     });
   }
   window.addEventListener("resize", () => {
@@ -818,7 +871,7 @@ function boot() {
   const historyPanel = $("historyPanel");
   const historyList = $("historyList");
   const closeHistoryBtn = $("closeHistoryBtn");
-  
+
   // 显示生成历史按钮
 
   function captureConfig() {
@@ -892,22 +945,22 @@ function boot() {
         </div>
         <div class="history-delete" title="删除">×</div>
       `;
-      
+
       div.querySelector(".history-delete").addEventListener("click", (e) => {
         e.stopPropagation();
-        if(confirm("确定删除这条记录吗？")) {
+        if (confirm("确定删除这条记录吗？")) {
           deleteHistoryItem(index);
         }
       });
 
       div.addEventListener("click", () => {
-        if(confirm("确定要恢复这个印章配置吗？当前未保存的修改将丢失。")) {
+        if (confirm("确定要恢复这个印章配置吗？当前未保存的修改将丢失。")) {
           applyInputs(item.config);
           update();
           // 移动端恢复配置后，如果控制面板关闭，则自动打开以便查看参数
           if (window.innerWidth < 1200 && controlsBox && controlsBox.style.display === 'none') {
-             controlsBox.style.display = 'block';
-             historyPanel.style.display = 'none'; // Close history to show controls
+            controlsBox.style.display = 'block';
+            historyPanel.style.display = 'none'; // Close history to show controls
           }
         }
       });
@@ -916,29 +969,26 @@ function boot() {
     });
   }
 
-  
+
 
   if (closeHistoryBtn) {
     closeHistoryBtn.addEventListener("click", () => {
       if (historyPanel) historyPanel.style.display = "none";
     });
   }
-  
-  
+
+
   // 这里暂时只在生成时打开，或者添加一个“查看历史”按钮？
   // 用户需求是“点击生成...放到历史记录里”，所以目前的逻辑符合。
   // 为了方便用户查看，可以添加一个额外的“查看历史”按钮，或者让“生成到历史”按钮兼具打开功能（如果不生成）
   // 但为了简单，先保持这样。用户生成后会自动打开列表。
-  
+
   // 初始渲染
   renderHistory();
 
-  let cfg = loadConfig();
-  if (!cfg) {
-    cfg = getResponsiveDefaults();
-    // 默认启用混合模式
-    cfg.blendOn = true;
-  }
+  cfg = getResponsiveDefaults();
+  // 默认启用混合模式
+  cfg.blendOn = true;
   applyInputs(cfg);
   update();
   // 页面加载完成后，保存当前配置（确保默认值也被保存）

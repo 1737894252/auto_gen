@@ -1023,7 +1023,7 @@ function cacheFontLocally() {
   // 下载字体并缓存到localStorage的函数
   function downloadAndCacheFont() {
     // 下载字体文件
-    fetch('simsun.woff2')
+    fetch('SimSun.woff2')
       .then(response => {
         if (!response.ok) {
           throw new Error(`字体下载失败，状态码: ${response.status}`);

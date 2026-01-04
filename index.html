@@ -59,17 +59,17 @@
             <label>
               圆直径(px)
               <div class="number-input-group">
-                <button class="number-btn" onclick="changeValue('diameter', '-')">-</button>
+                <button class="number-btn" data-id="diameter" data-operation="-">-</button>
                 <input id="diameter" type="number" min="0" max="800" value="500" step="1" />
-                <button class="number-btn" onclick="changeValue('diameter', '+')">+</button>
+                <button class="number-btn" data-id="diameter" data-operation="+">+</button>
               </div>
             </label>
             <label>
               圆线宽(px)
               <div class="number-input-group">
-                <button class="number-btn" onclick="changeValue('ringWidth', '-')">-</button>
+                <button class="number-btn" data-id="ringWidth" data-operation="-">-</button>
                 <input id="ringWidth" type="number" min="1" max="24" value="14" step="1" />
-                <button class="number-btn" onclick="changeValue('ringWidth', '+')">+</button>
+                <button class="number-btn" data-id="ringWidth" data-operation="+">+</button>
               </div>
             </label>
 
@@ -77,9 +77,9 @@
             <label>
               做旧程度
               <div class="number-input-group">
-                <button class="number-btn" onclick="changeValue('roughness', '-')">-</button>
+                <button class="number-btn" data-id="roughness" data-operation="-">-</button>
                 <input id="roughness" type="number" min="0" max="100" value="0" step="5" />
-                <button class="number-btn" onclick="changeValue('roughness', '+')">+</button>
+                <button class="number-btn" data-id="roughness" data-operation="+">+</button>
               </div>
             </label>
 
@@ -88,17 +88,17 @@
               <label>
                 起始角(°)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('topStartDeg', '-')">-</button>
+                  <button class="number-btn" data-id="topStartDeg" data-operation="-">-</button>
                   <input id="topStartDeg" type="number" min="0" max="360" value="174" step="1" />
-                  <button class="number-btn" onclick="changeValue('topStartDeg', '+')">+</button>
+                  <button class="number-btn" data-id="topStartDeg" data-operation="+">+</button>
                 </div>
               </label>
               <label>
                 距外圈(px)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('topOffset', '-')">-</button>
+                  <button class="number-btn" data-id="topOffset" data-operation="-">-</button>
                   <input id="topOffset" type="number" min="0" max="60" value="22" step="1" />
-                  <button class="number-btn" onclick="changeValue('topOffset', '+')">+</button>
+                  <button class="number-btn" data-id="topOffset" data-operation="+">+</button>
                 </div>
               </label>
             </div>
@@ -107,17 +107,17 @@
               <label>
                 字距(倍数)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('topSpacing', '-')">-</button>
+                  <button class="number-btn" data-id="topSpacing" data-operation="-">-</button>
                   <input id="topSpacing" type="number" min="0" max="1.6" value="1.0" step="0.01" />
-                  <button class="number-btn" onclick="changeValue('topSpacing', '+')">+</button>
+                  <button class="number-btn" data-id="topSpacing" data-operation="+">+</button>
                 </div>
               </label>
               <label>
                 旋转偏移(°)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('topRotateDeg', '-')">-</button>
+                  <button class="number-btn" data-id="topRotateDeg" data-operation="-">-</button>
                   <input id="topRotateDeg" type="number" min="-180" max="180" value="99" step="1" />
-                  <button class="number-btn" onclick="changeValue('topRotateDeg', '+')">+</button>
+                  <button class="number-btn" data-id="topRotateDeg" data-operation="+">+</button>
                 </div>
               </label>
             </div>
@@ -125,17 +125,17 @@
               <label>
                 字号(px)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('topFontSize', '-')">-</button>
+                  <button class="number-btn" data-id="topFontSize" data-operation="-">-</button>
                   <input id="topFontSize" type="number" min="0" max="48" value="42" step="1" />
-                  <button class="number-btn" onclick="changeValue('topFontSize', '+')">+</button>
+                  <button class="number-btn" data-id="topFontSize" data-operation="+">+</button>
                 </div>
               </label>
               <label>
                 字高(倍数)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('topFontHeight', '-')">-</button>
+                  <button class="number-btn" data-id="topFontHeight" data-operation="-">-</button>
                   <input id="topFontHeight" type="number" min="0.5" max="3.0" value="1.0" step="0.1" />
-                  <button class="number-btn" onclick="changeValue('topFontHeight', '+')">+</button>
+                  <button class="number-btn" data-id="topFontHeight" data-operation="+">+</button>
                 </div>
               </label>
             </div>
@@ -145,18 +145,18 @@
               <label>
                 类型字号(px)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('fontSize', '-')">-</button>
+                  <button class="number-btn" data-id="fontSize" data-operation="-">-</button>
                   <input id="fontSize" type="number" min="0" max="64" value="42" step="1" />
-                  <button class="number-btn" onclick="changeValue('fontSize', '+')">+</button>
+                  <button class="number-btn" data-id="fontSize" data-operation="+">+</button>
                 </div>
               </label>
 
               <label>
                 五角星大小(px)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('starSize', '-')">-</button>
+                  <button class="number-btn" data-id="starSize" data-operation="-">-</button>
                   <input id="starSize" type="number" min="10" max="200" value="40" step="1" />
-                  <button class="number-btn" onclick="changeValue('starSize', '+')">+</button>
+                  <button class="number-btn" data-id="starSize" data-operation="+">+</button>
                 </div>
               </label>
             </div>
@@ -165,17 +165,17 @@
               <label>
                 起始角(°)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('bottomStartDeg', '-')">-</button>
+                  <button class="number-btn" data-id="bottomStartDeg" data-operation="-">-</button>
                   <input id="bottomStartDeg" type="number" min="0" max="360" value="134" step="1" />
-                  <button class="number-btn" onclick="changeValue('bottomStartDeg', '+')">+</button>
+                  <button class="number-btn" data-id="bottomStartDeg" data-operation="+">+</button>
                 </div>
               </label>
               <label>
                 距外圈(px)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('bottomOffset', '-')">-</button>
+                  <button class="number-btn" data-id="bottomOffset" data-operation="-">-</button>
                   <input id="bottomOffset" type="number" min="0" max="60" value="28" step="1" />
-                  <button class="number-btn" onclick="changeValue('bottomOffset', '+')">+</button>
+                  <button class="number-btn" data-id="bottomOffset" data-operation="+">+</button>
                 </div>
               </label>
             </div>
@@ -183,17 +183,17 @@
               <label>
                 字距(倍数)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('bottomSpacing', '-')">-</button>
+                  <button class="number-btn" data-id="bottomSpacing" data-operation="-">-</button>
                   <input id="bottomSpacing" type="number" min="0" max="2" value="1.0" step="0.01" />
-                  <button class="number-btn" onclick="changeValue('bottomSpacing', '+')">+</button>
+                  <button class="number-btn" data-id="bottomSpacing" data-operation="+">+</button>
                 </div>
               </label>
               <label>
                 字号(px)
                 <div class="number-input-group">
-                  <button class="number-btn" onclick="changeValue('bottomFontSize', '-')">-</button>
+                  <button class="number-btn" data-id="bottomFontSize" data-operation="-">-</button>
                   <input id="bottomFontSize" type="number" min="2" max="32" value="26" step="1" />
-                  <button class="number-btn" onclick="changeValue('bottomFontSize', '+')">+</button>
+                  <button class="number-btn" data-id="bottomFontSize" data-operation="+">+</button>
                 </div>
               </label>
             </div>

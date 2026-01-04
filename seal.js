@@ -234,7 +234,13 @@ function drawBackground() {
 }
 
 // 全局函数：处理数字输入框的加减按钮点击事件
-function changeValue(id, operation) {
+function changeValue(id, operation, event) {
+  // 防止iOS双击缩放
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
   const input = document.getElementById(id);
   if (!input) return;
   
@@ -302,6 +308,23 @@ function boot() {
   if (starSize) {
     starSize.addEventListener("input", update);
   }
+  
+  // 添加+、-按钮的点击事件监听器，防止iOS双击缩放
+  const numberButtons = document.querySelectorAll(".number-btn");
+  numberButtons.forEach(button => {
+    button.addEventListener("click", (event) => {
+      // 防止iOS双击缩放
+      event.preventDefault();
+      event.stopPropagation();
+      
+      // 获取按钮的data属性
+      const id = button.getAttribute("data-id");
+      const operation = button.getAttribute("data-operation");
+      
+      // 调用changeValue函数
+      changeValue(id, operation, event);
+    });
+  });
   
   // 添加类型选择事件监听，当选择"其他"时显示自定义类型输入框
   if (type && customType) {

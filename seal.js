@@ -317,7 +317,10 @@ function boot() {
     };
   }
 
-  function getFont() { return 'SimSun' }
+  function getFont() {
+    // 返回包含多种宋体风格字体的列表，确保iOS端能使用合适的字体
+    return 'SimSun, Songti SC, STSong, STZhongsong, serif';
+  }
   function positionOverlay(x, y) { const maxX = stage.clientWidth - (overlay.clientWidth || 0); const maxY = stage.clientHeight - (overlay.clientHeight || 0); currentX = Math.max(0, Math.min(x, maxX)); currentY = Math.max(0, Math.min(y, maxY)); overlay.style.left = currentX + "px"; overlay.style.top = currentY + "px" }
 
   // 添加拖拽功能的鼠标和触摸事件监听器
@@ -550,7 +553,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: 'SimSun',
+      fontFamily: getFont(),
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -574,7 +577,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: 'SimSun',
+      fontFamily: getFont(),
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -664,7 +667,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: 'SimSun',
+      fontFamily: getFont(),
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -770,7 +773,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: 'SimSun',
+      fontFamily: getFont(),
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -1008,11 +1011,23 @@ async function getSystemFonts() {
 // 测试常用字体的备选方案
 function testCommonFonts() {
   console.log('使用备选方案测试常用字体:');
+  // 扩展常用字体列表，添加更多iOS系统字体
   const commonFonts = [
-    'SimSun', '宋体', 'Songti SC', 'STSong',
-    'Microsoft YaHei', '微软雅黑', 'Hiragino Sans GB',
+    // 宋体系列
+    'SimSun', '宋体', 'Songti SC', 'STSong', 'STSongti-SC-Regular',
+    // 黑体系列
+    'Microsoft YaHei', '微软雅黑', 'Hiragino Sans GB', 'Heiti SC', '黑体-简',
+    // iOS系统字体
+    'PingFang SC', 'PingFang TC', 'PingFang HK',
+    'SF Pro Text', 'SF Pro Display', 'SF Pro Icons',
+    // 英文常用字体
     'Arial', 'Helvetica', 'Times New Roman',
-    'Courier New', 'Georgia', 'Verdana'
+    'Courier New', 'Georgia', 'Verdana',
+    'Tahoma', 'Trebuchet MS', 'Impact',
+    // 其他中文字体
+    'KaiTi', '楷体', 'STKaiti', 'FZKTJW--GB1-0',
+    'YouYuan', '幼圆', 'STYouYuan',
+    'FangSong', '仿宋', 'STFangsong'
   ];
   
   // 创建一个测试元素
@@ -1020,27 +1035,52 @@ function testCommonFonts() {
   testElement.style.position = 'absolute';
   testElement.style.left = '-9999px';
   testElement.style.top = '-9999px';
-  testElement.style.fontSize = '16px';
-  testElement.textContent = '测试字体';
+  testElement.style.fontSize = '20px'; // 增大字号，提高测试准确性
+  testElement.style.fontWeight = 'normal';
+  testElement.style.fontStyle = 'normal';
+  testElement.textContent = '测试字体ABCabc123'; // 使用更多字符，提高测试准确性
   document.body.appendChild(testElement);
   
   // 测试每个字体
   const availableFonts = [];
-  const defaultWidth = testElement.offsetWidth;
+  
+  // 先设置为sans-serif获取默认宽度
+  testElement.style.fontFamily = 'sans-serif';
+  const defaultWidthSans = testElement.offsetWidth;
+  console.log(`默认sans-serif宽度: ${defaultWidthSans}px`);
+  
+  // 再设置为serif获取对比宽度
+  testElement.style.fontFamily = 'serif';
+  const defaultWidthSerif = testElement.offsetWidth;
+  console.log(`默认serif宽度: ${defaultWidthSerif}px`);
   
   commonFonts.forEach(font => {
+    // 分别测试字体作为sans-serif和serif的情况
     testElement.style.fontFamily = `'${font}', sans-serif`;
-    const currentWidth = testElement.offsetWidth;
-    if (currentWidth !== defaultWidth) {
+    const widthSans = testElement.offsetWidth;
+    
+    testElement.style.fontFamily = `'${font}', serif`;
+    const widthSerif = testElement.offsetWidth;
+    
+    console.log(`${font} - sans: ${widthSans}px, serif: ${widthSerif}px`);
+    
+    // 如果任一测试中字体宽度与默认值不同，则认为字体可用
+    if (widthSans !== defaultWidthSans || widthSerif !== defaultWidthSerif) {
       availableFonts.push(font);
     }
   });
   
   // 输出结果
+  console.log('检测到可用字体:');
   availableFonts.forEach((font, index) => {
     console.log(`${index + 1}. ${font}`);
   });
   console.log(`总共检测到 ${availableFonts.length} 种常用字体`);
+  
+  // 特别提示iOS用户
+  if (availableFonts.length === 0) {
+    console.warn('未检测到可用字体，可能是测试方法在当前浏览器不准确。建议直接使用已知的iOS系统字体：PingFang SC, Songti SC, Heiti SC');
+  }
   
   // 清理测试元素
   document.body.removeChild(testElement);

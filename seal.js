@@ -126,9 +126,9 @@ function drawCircle(ctx, cx, cy, r, lineWidth, color) { ctx.beginPath(); ctx.arc
 
 function splitChars(s) { return Array.from(s) }
 
-function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', 'SimSun', 'Songti SC', 'STSong', '宋体', serif`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
+function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', sans-serif`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
 
-function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', 'SimSun', 'Songti SC', 'STSong', '宋体', serif`; ctx.fillText(text, cx, cy); ctx.restore() }
+function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', sans-serif`; ctx.fillText(text, cx, cy); ctx.restore() }
 
 // 修复renderSeal函数，确保正确接收ctx参数并设置透明背景
 function renderSeal(ctx, d, opts) {// 确保画布有透明背景
@@ -298,10 +298,10 @@ function boot() {
       sealRotation: "0",
       roughness: "0",
 
-      topStartDeg: "170",
+      topStartDeg: "168",
       topOffset: "20",
       topSpacing: "1.06",
-      topRotateDeg: "100",
+      topRotateDeg: "98",
       topFontSize: "22",
       topFontHeight: "1.5",
 
@@ -978,115 +978,91 @@ function updateCanvasSize() {
   }
 }
 
-// 获取系统字体并输出到控制台
-async function getSystemFonts() {
-  try {
-    // 检查浏览器是否支持queryLocalFonts API
-    if ('queryLocalFonts' in window) {
-      console.log('使用queryLocalFonts API获取系统字体:');
-      try {
-        const fonts = await window.queryLocalFonts();
-        fonts.forEach((font, index) => {
-          console.log(`${index + 1}. ${font.family}`);
+// 将SimSunWoff2字体缓存到本地，避免重复下载
+function cacheFontLocally() {
+  // 字体缓存的键名
+  const fontCacheKey = 'simsun_woff2_cache';
+  
+  // 检查浏览器是否支持document.fonts API和localStorage
+  if ('fonts' in document && 'localStorage' in window) {
+    try {
+      // 检查localStorage中是否已有缓存的字体
+      const cachedFont = localStorage.getItem(fontCacheKey);
+      
+      if (cachedFont) {
+        console.log('发现本地缓存的SimSunWoff2字体，从缓存加载');
+        // 从缓存创建FontFace对象
+        const fontFace = new FontFace('SimSunWoff2', `url(${cachedFont})`);
+        
+        // 加载缓存的字体
+        fontFace.load().then(() => {
+          document.fonts.add(fontFace);
+          console.log('缓存的SimSunWoff2字体加载成功，开始渲染印章');
+          boot();
+        }).catch((error) => {
+          console.warn('缓存的SimSunWoff2字体加载失败，重新下载:', error);
+          // 缓存的字体加载失败，重新下载
+          downloadAndCacheFont();
         });
-        console.log(`总共获取到 ${fonts.length} 种系统字体`);
-      } catch (error) {
-        if (error.name === 'SecurityError') {
-          console.warn('queryLocalFonts API需要用户交互才能调用，请点击页面后重试。');
-          // 回退到备选方案
-          testCommonFonts();
-        } else {
-          throw error;
-        }
+      } else {
+        console.log('未发现本地缓存的SimSunWoff2字体，开始下载并缓存');
+        // 没有缓存，下载字体并缓存
+        downloadAndCacheFont();
       }
-    } else {
-      // 备选方案：使用CSS font-family测试常用字体
-      testCommonFonts();
+    } catch (error) {
+      console.warn('使用localStorage缓存字体时出错，直接下载:', error);
+      // 缓存操作出错，直接下载字体
+      downloadAndCacheFont();
     }
-  } catch (error) {
-    console.error('获取系统字体时出错:', error);
+  } else {
+    console.warn('浏览器不支持document.fonts API或localStorage，直接加载字体');
+    // 浏览器不支持必要的API，直接渲染
+    boot();
+  }
+  
+  // 下载字体并缓存到localStorage的函数
+  function downloadAndCacheFont() {
+    // 下载字体文件
+    fetch('simsun.woff2')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`字体下载失败，状态码: ${response.status}`);
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        // 将字体文件转换为data URL
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      })
+      .then(dataUrl => {
+        // 缓存字体到localStorage
+        localStorage.setItem(fontCacheKey, dataUrl);
+        console.log('SimSunWoff2字体下载成功并缓存到本地');
+        
+        // 创建FontFace对象并加载
+        const fontFace = new FontFace('SimSunWoff2', `url(${dataUrl})`);
+        return fontFace.load();
+      })
+      .then(fontFace => {
+        // 字体加载成功，添加到文档中
+        document.fonts.add(fontFace);
+        console.log('SimSunWoff2字体加载成功，开始渲染印章');
+        // 开始渲染印章
+        boot();
+      })
+      .catch((error) => {
+        // 字体下载或缓存失败，使用备选方案
+        console.warn('SimSunWoff2字体下载或缓存失败，使用备选方案渲染:', error);
+        // 仍然继续渲染，浏览器会使用备选字体
+        boot();
+      });
   }
 }
 
-// 测试常用字体的备选方案
-function testCommonFonts() {
-  console.log('使用备选方案测试常用字体:');
-  // 扩展常用字体列表，添加更多iOS系统字体
-  const commonFonts = [
-    // 宋体系列
-    'SimSun', '宋体', 'Songti SC', 'STSong', 'STSongti-SC-Regular',
-    // 黑体系列
-    'Microsoft YaHei', '微软雅黑', 'Hiragino Sans GB', 'Heiti SC', '黑体-简',
-    // iOS系统字体
-    'PingFang SC', 'PingFang TC', 'PingFang HK',
-    'SF Pro Text', 'SF Pro Display', 'SF Pro Icons',
-    // 英文常用字体
-    'Arial', 'Helvetica', 'Times New Roman',
-    'Courier New', 'Georgia', 'Verdana',
-    'Tahoma', 'Trebuchet MS', 'Impact',
-    // 其他中文字体
-    'KaiTi', '楷体', 'STKaiti', 'FZKTJW--GB1-0',
-    'YouYuan', '幼圆', 'STYouYuan',
-    'FangSong', '仿宋', 'STFangsong'
-  ];
-  
-  // 创建一个测试元素
-  const testElement = document.createElement('div');
-  testElement.style.position = 'absolute';
-  testElement.style.left = '-9999px';
-  testElement.style.top = '-9999px';
-  testElement.style.fontSize = '20px'; // 增大字号，提高测试准确性
-  testElement.style.fontWeight = 'normal';
-  testElement.style.fontStyle = 'normal';
-  testElement.textContent = '测试字体ABCabc123'; // 使用更多字符，提高测试准确性
-  document.body.appendChild(testElement);
-  
-  // 测试每个字体
-  const availableFonts = [];
-  
-  // 先设置为sans-serif获取默认宽度
-  testElement.style.fontFamily = 'sans-serif';
-  const defaultWidthSans = testElement.offsetWidth;
-  console.log(`默认sans-serif宽度: ${defaultWidthSans}px`);
-  
-  // 再设置为serif获取对比宽度
-  testElement.style.fontFamily = 'serif';
-  const defaultWidthSerif = testElement.offsetWidth;
-  console.log(`默认serif宽度: ${defaultWidthSerif}px`);
-  
-  commonFonts.forEach(font => {
-    // 分别测试字体作为sans-serif和serif的情况
-    testElement.style.fontFamily = `'${font}', sans-serif`;
-    const widthSans = testElement.offsetWidth;
-    
-    testElement.style.fontFamily = `'${font}', serif`;
-    const widthSerif = testElement.offsetWidth;
-    
-    console.log(`${font} - sans: ${widthSans}px, serif: ${widthSerif}px`);
-    
-    // 如果任一测试中字体宽度与默认值不同，则认为字体可用
-    if (widthSans !== defaultWidthSans || widthSerif !== defaultWidthSerif) {
-      availableFonts.push(font);
-    }
-  });
-  
-  // 输出结果
-  console.log('检测到可用字体:');
-  availableFonts.forEach((font, index) => {
-    console.log(`${index + 1}. ${font}`);
-  });
-  console.log(`总共检测到 ${availableFonts.length} 种常用字体`);
-  
-  // 特别提示iOS用户
-  if (availableFonts.length === 0) {
-    console.warn('未检测到可用字体，可能是测试方法在当前浏览器不准确。建议直接使用已知的iOS系统字体：PingFang SC, Songti SC, Heiti SC');
-  }
-  
-  // 清理测试元素
-  document.body.removeChild(testElement);
-}
-
-boot();
-
-// 添加点击事件监听器，在用户点击页面后获取字体
-window.addEventListener('click', getSystemFonts, { once: true });
+// 开始加载字体并渲染
+cacheFontLocally();

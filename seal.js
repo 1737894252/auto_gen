@@ -311,6 +311,8 @@ function boot() {
   
   // 添加+、-按钮的点击事件监听器，防止iOS双击缩放
   const numberButtons = document.querySelectorAll(".number-btn");
+  console.log(`Found ${numberButtons.length} number buttons`);
+  
   numberButtons.forEach(button => {
     button.addEventListener("click", (event) => {
       // 防止iOS双击缩放
@@ -320,6 +322,8 @@ function boot() {
       // 获取按钮的data属性
       const id = button.getAttribute("data-id");
       const operation = button.getAttribute("data-operation");
+      
+      console.log(`Button clicked: id=${id}, operation=${operation}`);
       
       // 调用changeValue函数
       changeValue(id, operation, event);

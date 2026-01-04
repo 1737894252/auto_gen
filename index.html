@@ -8,11 +8,25 @@
 </head>
 <body>
   <div class="container">
-    <h1>中国居民委员会/村委会印章生成</h1>
     <div class="main-layout">
       <div class="canvas-wrap">
         <!-- 画布顶部操作按钮 - 分步显示 -->
         <div class="canvas-top-buttons">
+          <div class="input-group">
+            <label for="type">类型:</label>
+            <select id="type">
+              <option value="居民委员会">居民委员会</option>
+              <option value="村民委员会">村民委员会</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="topText">单位名称:</label>
+            <input id="topText" value="赣州市南昌县琴城镇新建社区" placeholder="输入单位名称" />
+          </div>
+          <div class="input-group">
+            <label for="serial">行政代码:</label>
+            <input id="serial" value="3610231000004" placeholder="输入行政代码" />
+          </div>
           <button id="designComplete" class="primary-btn">设计完成</button>
           <label class="file-input-wrapper" id="uploadWrapper" style="display: none;">
             上传图片
@@ -26,8 +40,6 @@
           <img id="sealOverlay" alt="seal" draggable="false" ondragstart="return false" />
         </div>
         <div class="toolbar">
-          <button id="blendToggle">正片叠底</button>
-          <button id="resetState">重置</button>
           <span id="coords">X: 0, Y: 0</span>
           <span id="canvasSize">画布尺寸: 0 x 0</span>
         </div>
@@ -38,85 +50,93 @@
         <button id="controlsToggle" class="controls-toggle">⚙️ 操作面板</button>
         <div id="controlsBox" class="controls-box" style="display: none;">
           <div class="controls">
-            <div class="section-title">文案与类型</div>
-            <label>
-              类型
-              <select id="type">
-                <option value="居民委员会">居民委员会</option>
-                <option value="村民委员会">村民委员会</option>
-              </select>
-            </label>
-            <label>
-              单位名称
-              <input id="topText" value="赣州市南昌县琴城镇新建社区" placeholder="例如：赣州市南昌县琴城镇新建社区" />
-            </label>
-            <label>
-              行政代码
-              <input id="serial" value="3610231000004" placeholder="例如：3610231000004" />
-            </label>
             <div class="section-title">尺寸与样式</div>
             <label>
               圆直径(px)
-              <input id="diameter" type="range" min="100" max="800" value="500" />
-              <span class="range-value" id="diameterValue">500</span>
+              <div class="number-input-group">
+                <button class="number-btn" onclick="changeValue('diameter', '-')">-</button>
+                <input id="diameter" type="number" min="0" max="800" value="500" step="1" />
+                <button class="number-btn" onclick="changeValue('diameter', '+')">+</button>
+              </div>
             </label>
             <label>
               圆线宽(px)
-              <input id="ringWidth" type="range" min="6" max="24" value="14" />
-              <span class="range-value" id="ringWidthValue">14</span>
+              <div class="number-input-group">
+                <button class="number-btn" onclick="changeValue('ringWidth', '-')">-</button>
+                <input id="ringWidth" type="number" min="1" max="24" value="14" step="1" />
+                <button class="number-btn" onclick="changeValue('ringWidth', '+')">+</button>
+              </div>
             </label>
             <label>
               类型字号(px)
-              <input id="fontSize" type="range" min="0" max="64" value="42" />
-              <span class="range-value" id="fontSizeValue">42</span>
+              <div class="number-input-group">
+                <button class="number-btn" onclick="changeValue('fontSize', '-')">-</button>
+                <input id="fontSize" type="number" min="0" max="64" value="42" step="1" />
+                <button class="number-btn" onclick="changeValue('fontSize', '+')">+</button>
+              </div>
             </label>
-            
-            
-            <label>
-              印章旋转(°)
-              <input id="sealRotation" type="range" min="-360" max="360" step="1" value="0" />
-              <span class="range-value" id="sealRotationValue">0</span>
-            </label>
+
             <label>
               做旧程度
-              <input id="roughness" type="range" min="0" max="100" step="1" value="0" />
-              <span class="range-value" id="roughnessValue">0</span>
+              <div class="number-input-group">
+                <button class="number-btn" onclick="changeValue('roughness', '-')">-</button>
+                <input id="roughness" type="number" min="0" max="100" value="0" step="5" />
+                <button class="number-btn" onclick="changeValue('roughness', '+')">+</button>
+              </div>
             </label>
             <div class="section-title">单位名称参数</div>
             <div class="arc-row">
               <label>
                 起始角(°)
-                <input id="topStartDeg" type="range" min="0" max="360" step="1" value="174" />
-                <span class="range-value" id="topStartDegValue">240</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('topStartDeg', '-')">-</button>
+                  <input id="topStartDeg" type="number" min="0" max="360" value="174" step="1" />
+                  <button class="number-btn" onclick="changeValue('topStartDeg', '+')">+</button>
+                </div>
               </label>
               <label>
                 距外圈(px)
-                <input id="topOffset" type="range" min="4" max="60" step="1" value="22" />
-                <span class="range-value" id="topOffsetValue">22</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('topOffset', '-')">-</button>
+                  <input id="topOffset" type="number" min="0" max="60" value="22" step="1" />
+                  <button class="number-btn" onclick="changeValue('topOffset', '+')">+</button>
+                </div>
               </label>
             </div>
             <div class="arc-row">
               <label>
                 字距(倍数)
-                <input id="topSpacing" type="range" min="0.6" max="1.6" step="0.02" value="1.0" />
-                <span class="range-value" id="topSpacingValue">1.0</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('topSpacing', '-')">-</button>
+                  <input id="topSpacing" type="number" min="0" max="1.6" value="1.0" step="0.01" />
+                  <button class="number-btn" onclick="changeValue('topSpacing', '+')">+</button>
+                </div>
               </label>
               <label>
                 旋转偏移(°)
-                <input id="topRotateDeg" type="range" min="-180" max="180" step="1" value="99" />
-                <span class="range-value" id="topRotateDegValue">0</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('topRotateDeg', '-')">-</button>
+                  <input id="topRotateDeg" type="number" min="-180" max="180" value="99" step="1" />
+                  <button class="number-btn" onclick="changeValue('topRotateDeg', '+')">+</button>
+                </div>
               </label>
             </div>
             <div class="arc-row">
               <label>
                 字号(px)
-                <input id="topFontSize" type="range" min="2" max="32" step="1" value="42" />
-                <span class="range-value" id="topFontSizeValue">42</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('topFontSize', '-')">-</button>
+                  <input id="topFontSize" type="number" min="0" max="48" value="42" step="1" />
+                  <button class="number-btn" onclick="changeValue('topFontSize', '+')">+</button>
+                </div>
               </label>
               <label>
                 字高(倍数)
-                <input id="topFontHeight" type="range" min="0.5" max="2.0" step="0.1" value="1.0" />
-                <span class="range-value" id="topFontHeightValue">1.0</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('topFontHeight', '-')">-</button>
+                  <input id="topFontHeight" type="number" min="0.5" max="2.0" value="1.0" step="0.1" />
+                  <button class="number-btn" onclick="changeValue('topFontHeight', '+')">+</button>
+                </div>
               </label>
             </div>
             
@@ -124,25 +144,37 @@
             <div class="arc-row">
               <label>
                 起始角(°)
-                <input id="bottomStartDeg" type="range" min="0" max="360" step="1" value="134" />
-                <span class="range-value" id="bottomStartDegValue">225</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('bottomStartDeg', '-')">-</button>
+                  <input id="bottomStartDeg" type="number" min="0" max="360" value="134" step="1" />
+                  <button class="number-btn" onclick="changeValue('bottomStartDeg', '+')">+</button>
+                </div>
               </label>
               <label>
                 距外圈(px)
-                <input id="bottomOffset" type="range" min="4" max="60" step="1" value="28" />
-                <span class="range-value" id="bottomOffsetValue">28</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('bottomOffset', '-')">-</button>
+                  <input id="bottomOffset" type="number" min="4" max="60" value="28" step="1" />
+                  <button class="number-btn" onclick="changeValue('bottomOffset', '+')">+</button>
+                </div>
               </label>
             </div>
             <div class="arc-row">
               <label>
                 字距(倍数)
-                <input id="bottomSpacing" type="range" min="0.1" max="2" step="0.02" value="1.0" />
-                <span class="range-value" id="bottomSpacingValue">1.0</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('bottomSpacing', '-')">-</button>
+                  <input id="bottomSpacing" type="number" min="0.1" max="2" value="1.0" step="0.02" />
+                  <button class="number-btn" onclick="changeValue('bottomSpacing', '+')">+</button>
+                </div>
               </label>
               <label>
                 字号(px)
-                <input id="bottomFontSize" type="range" min="2" max="32" step="1" value="26" />
-                <span class="range-value" id="bottomFontSizeValue">26</span>
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('bottomFontSize', '-')">-</button>
+                  <input id="bottomFontSize" type="number" min="2" max="32" value="26" step="1" />
+                  <button class="number-btn" onclick="changeValue('bottomFontSize', '+')">+</button>
+                </div>
               </label>
             </div>
           </div>

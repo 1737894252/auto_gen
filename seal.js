@@ -14,7 +14,7 @@ let noiseGenerated = false;
 
 function initNoise() {
   if (noiseGenerated) return;
-  const size = 1024; // 足够覆盖最大印章尺寸(800)
+  const size = 300; // 固定为300，与画布尺寸匹配
   noiseCanvas.width = size;
   noiseCanvas.height = size;
 
@@ -229,6 +229,31 @@ function drawBackground() {
   bgCtx.drawImage(bgImg, 0, 0, bw, bh);
 }
 
+// 全局函数：处理数字输入框的加减按钮点击事件
+function changeValue(id, operation) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  
+  const min = parseFloat(input.min) || 0;
+  const max = parseFloat(input.max) || 100;
+  const step = parseFloat(input.step) || 1;
+  let currentValue = parseFloat(input.value) || 0;
+  
+  // 计算新值：加按钮就+step，减按钮就-step
+  let delta = operation === '+' ? step : -step;
+  let newValue = currentValue + delta;
+  
+  // 确保新值在最小值和最大值之间
+  newValue = Math.max(min, Math.min(max, newValue));
+  
+  // 更新输入框的值
+  input.value = newValue;
+  
+  // 触发input事件，以便update函数能够更新印章显示
+  const evt = new Event('input', { bubbles: true });
+  input.dispatchEvent(evt);
+}
+
 function boot() {
   const type = $("type");
   const topText = $("topText");
@@ -244,8 +269,6 @@ function boot() {
   const bottomSpacing = $("bottomSpacing");
   
   const topRotateDeg = $("topRotateDeg");
-  const blendToggle = $("blendToggle");
-  const resetState = $("resetState");
   const bgImage = $("bgImage");
   const downloadBtn = $("download");
   // 新增分步流程按钮
@@ -263,27 +286,9 @@ function boot() {
   const controlsToggle = $("controlsToggle");
   const controlsBox = $("controlsBox");
   let currentX = 0, currentY = 0;
-  // 默认为true
-  let blendOn = true;
 
-  // 获取所有range-value元素
-  const diameterValue = $("diameterValue");
-  const ringWidthValue = $("ringWidthValue");
-  const fontSizeValue = $("fontSizeValue");
-  const sealRotationValue = $("sealRotationValue");
-  const roughnessValue = $("roughnessValue");
-  const topStartDegValue = $("topStartDegValue");
-  const topOffsetValue = $("topOffsetValue");
-  const topSpacingValue = $("topSpacingValue");
-  const topRotateDegValue = $("topRotateDegValue");
-  const topFontSizeValue = $("topFontSizeValue");
-  const bottomStartDegValue = $("bottomStartDegValue");
-  const bottomOffsetValue = $("bottomOffsetValue");
-  const bottomSpacingValue = $("bottomSpacingValue");
-  const bottomFontSizeValue = $("bottomFontSizeValue");
   // 添加上弧字高控制
   const topFontHeight = $("topFontHeight");
-  const topFontHeightValue = $("topFontHeightValue");
 
   function getResponsiveDefaults() {
     return {
@@ -467,7 +472,6 @@ function boot() {
     }
   });
   function updateCoords() { const fx = currentX.toFixed(2), fy = currentY.toFixed(2); $("coords").textContent = `X: ${fx}, Y: ${fy}` }
-  function setBlend(active) { overlay.style.mixBlendMode = active ? "multiply" : "normal"; blendOn = active; blendToggle.classList.toggle("active", active) }
   function saveConfig() {
     try {
       const config = captureConfig();
@@ -493,8 +497,7 @@ function boot() {
     if (cfg.diameter !== undefined) diameter.value = cfg.diameter;
     if (cfg.ringWidth !== undefined) ringWidth.value = cfg.ringWidth;
     if (cfg.fontSize !== undefined) fontSize.value = cfg.fontSize;
-    if (cfg.fontSelect !== undefined) fontSelect.value = cfg.fontSelect;
-    if (cfg.fontCustom !== undefined) fontCustom.value = cfg.fontCustom;
+    
     if (cfg.topStartDeg !== undefined) topStartDeg.value = cfg.topStartDeg;
     if (cfg.bottomStartDeg !== undefined) bottomStartDeg.value = cfg.bottomStartDeg;
     if (cfg.topOffset !== undefined) topOffset.value = cfg.topOffset;
@@ -509,8 +512,6 @@ function boot() {
     if (sealRotation && cfg.sealRotation !== undefined) sealRotation.value = cfg.sealRotation;
     if (cfg.overlayX != null) currentX = parseFloat(cfg.overlayX);
     if (cfg.overlayY != null) currentY = parseFloat(cfg.overlayY);
-    if (cfg.blendOn != null) setBlend(!!cfg.blendOn)
-    else setBlend(true); // 默认启用
   }
   function buildOpts() {
     return {
@@ -562,23 +563,6 @@ function boot() {
       roughness: parseInt(roughness.value, 10)
     };
 
-    // 更新所有range-value显示
-    diameterValue.textContent = diameter.value;
-    ringWidthValue.textContent = ringWidth.value;
-    fontSizeValue.textContent = fontSize.value;
-    sealRotationValue.textContent = sealRotation?.value || 0;
-    roughnessValue.textContent = roughness.value;
-    topStartDegValue.textContent = topStartDeg.value;
-    topOffsetValue.textContent = topOffset.value;
-    topSpacingValue.textContent = parseFloat(topSpacing.value).toFixed(2);
-    topRotateDegValue.textContent = topRotateDeg.value;
-    topFontSizeValue.textContent = topFontSize.value;
-    topFontHeightValue.textContent = parseFloat(topFontHeight.value).toFixed(1);
-    bottomStartDegValue.textContent = bottomStartDeg.value;
-    bottomOffsetValue.textContent = bottomOffset.value;
-    bottomSpacingValue.textContent = parseFloat(bottomSpacing.value).toFixed(2);
-    bottomFontSizeValue.textContent = bottomFontSize.value;
-
     // 直接在全局canvas上渲染印章，然后转换为data URL
     const d = opts.diameter;
     setCanvasSize(d);
@@ -593,7 +577,7 @@ function boot() {
     overlay.style.background = "transparent";
 
     if (!bgImg) {
-      setBgSize(stage.clientWidth, stage.clientWidth);
+      setBgSize(300, 300);
       updateCanvasSize();
     }
     if (!currentX && !currentY) {
@@ -626,13 +610,6 @@ function boot() {
   // 添加印章旋转的事件监听器
   sealRotation?.addEventListener("input", update);
   roughness.addEventListener("input", update);
-  blendToggle.addEventListener("click", () => {
-    setBlend(!blendOn);
-    saveConfig();
-  });
-  resetState.addEventListener("click", () => {
-    update();
-  });
   // 分步流程逻辑
 
   // 设计完成按钮点击事件 - 直接下载印章
@@ -697,9 +674,9 @@ function boot() {
     img.onload = () => {
       bgImg = img;
 
-      // 直接使用图片原始尺寸作为画布尺寸
-      const targetWidth = img.width;
-      const targetHeight = img.height;
+      // 固定画布尺寸为300*300
+      const targetWidth = 300;
+      const targetHeight = 300;
 
       // 设置画布尺寸
       setBgSize(targetWidth, targetHeight);
@@ -714,9 +691,9 @@ function boot() {
       bgCtx.imageSmoothingEnabled = true;
       bgCtx.imageSmoothingQuality = 'high';
 
-      // 直接100%显示图片，填满整个画布
+      // 绘制图片，确保填满300*300画布
       bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-      bgCtx.drawImage(img, 0, 0, bgCanvas.width, bgCanvas.height);
+      bgCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
       update();
 
@@ -755,10 +732,7 @@ function boot() {
     const sealWidth = overlay.clientWidth * scaleX;
     const sealHeight = overlay.clientHeight * scaleY;
 
-    // 如果启用了混合模式，在绘制印章时应用正片叠底效果
-    if (blendOn) {
-      ectx.globalCompositeOperation = "multiply";
-    }
+    
 
     // 重构opts对象，用于重新渲染高分辨率印章
     const opts = {
@@ -803,9 +777,6 @@ function boot() {
     // 将高分辨率印章绘制到最终画布上
     ectx.drawImage(tempCanvas, sealX, sealY, sealWidth, sealHeight);
 
-    // 恢复默认合成模式
-    ectx.globalCompositeOperation = "source-over";
-
     // 生成高质量的PNG图片，使用最高质量参数
     const a = document.createElement("a");
     a.href = exp.toDataURL("image/png", 1.0); // 使用最高质量参数
@@ -814,8 +785,6 @@ function boot() {
 
     // 重置流程，允许重新设计
     setTimeout(() => {
-      // 重置界面
-      resetState.click();
       // 恢复初始按钮状态
       designCompleteBtn.style.display = 'inline-block';
       uploadWrapper.style.display = 'none';
@@ -835,9 +804,9 @@ function boot() {
     });
   }
   window.addEventListener("resize", () => {
-    // 如果没有背景图，调整画布分辨率以匹配显示尺寸
+    // 固定画布尺寸为300*300
     if (!bgImg) {
-      setBgSize(stage.clientWidth, stage.clientHeight);
+      setBgSize(300, 300);
       updateCanvasSize();
     }
     drawBackground();
@@ -892,7 +861,6 @@ function boot() {
       bottomOffset: bottomOffset.value,
       bottomSpacing: bottomSpacing.value,
       bottomFontSize: bottomFontSize.value,
-      blendOn: blendOn,
       overlayX: currentX,
       overlayY: currentY
     };
@@ -982,6 +950,9 @@ function boot() {
   // 初始渲染
   renderHistory();
 
+  // 重置localStorage，清除可能包含旧属性的配置
+  localStorage.removeItem('sealConfig');
+  
   cfg = getResponsiveDefaults();
   // 默认启用混合模式
   cfg.blendOn = true;

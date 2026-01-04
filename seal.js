@@ -981,57 +981,72 @@ async function getSystemFonts() {
     // 检查浏览器是否支持queryLocalFonts API
     if ('queryLocalFonts' in window) {
       console.log('使用queryLocalFonts API获取系统字体:');
-      const fonts = await window.queryLocalFonts();
-      fonts.forEach((font, index) => {
-        console.log(`${index + 1}. ${font.family}`);
-      });
-      console.log(`总共获取到 ${fonts.length} 种系统字体`);
+      try {
+        const fonts = await window.queryLocalFonts();
+        fonts.forEach((font, index) => {
+          console.log(`${index + 1}. ${font.family}`);
+        });
+        console.log(`总共获取到 ${fonts.length} 种系统字体`);
+      } catch (error) {
+        if (error.name === 'SecurityError') {
+          console.warn('queryLocalFonts API需要用户交互才能调用，请点击页面后重试。');
+          // 回退到备选方案
+          testCommonFonts();
+        } else {
+          throw error;
+        }
+      }
     } else {
       // 备选方案：使用CSS font-family测试常用字体
-      console.log('浏览器不支持queryLocalFonts API，使用备选方案测试常用字体:');
-      const commonFonts = [
-        'SimSun', '宋体', 'Songti SC', 'STSong',
-        'Microsoft YaHei', '微软雅黑', 'Hiragino Sans GB',
-        'Arial', 'Helvetica', 'Times New Roman',
-        'Courier New', 'Georgia', 'Verdana'
-      ];
-      
-      // 创建一个测试元素
-      const testElement = document.createElement('div');
-      testElement.style.position = 'absolute';
-      testElement.style.left = '-9999px';
-      testElement.style.top = '-9999px';
-      testElement.style.fontSize = '16px';
-      testElement.textContent = '测试字体';
-      document.body.appendChild(testElement);
-      
-      // 测试每个字体
-      const availableFonts = [];
-      const defaultWidth = testElement.offsetWidth;
-      
-      commonFonts.forEach(font => {
-        testElement.style.fontFamily = `'${font}', sans-serif`;
-        const currentWidth = testElement.offsetWidth;
-        if (currentWidth !== defaultWidth) {
-          availableFonts.push(font);
-        }
-      });
-      
-      // 输出结果
-      availableFonts.forEach((font, index) => {
-        console.log(`${index + 1}. ${font}`);
-      });
-      console.log(`总共检测到 ${availableFonts.length} 种常用字体`);
-      
-      // 清理测试元素
-      document.body.removeChild(testElement);
+      testCommonFonts();
     }
   } catch (error) {
     console.error('获取系统字体时出错:', error);
   }
 }
 
+// 测试常用字体的备选方案
+function testCommonFonts() {
+  console.log('使用备选方案测试常用字体:');
+  const commonFonts = [
+    'SimSun', '宋体', 'Songti SC', 'STSong',
+    'Microsoft YaHei', '微软雅黑', 'Hiragino Sans GB',
+    'Arial', 'Helvetica', 'Times New Roman',
+    'Courier New', 'Georgia', 'Verdana'
+  ];
+  
+  // 创建一个测试元素
+  const testElement = document.createElement('div');
+  testElement.style.position = 'absolute';
+  testElement.style.left = '-9999px';
+  testElement.style.top = '-9999px';
+  testElement.style.fontSize = '16px';
+  testElement.textContent = '测试字体';
+  document.body.appendChild(testElement);
+  
+  // 测试每个字体
+  const availableFonts = [];
+  const defaultWidth = testElement.offsetWidth;
+  
+  commonFonts.forEach(font => {
+    testElement.style.fontFamily = `'${font}', sans-serif`;
+    const currentWidth = testElement.offsetWidth;
+    if (currentWidth !== defaultWidth) {
+      availableFonts.push(font);
+    }
+  });
+  
+  // 输出结果
+  availableFonts.forEach((font, index) => {
+    console.log(`${index + 1}. ${font}`);
+  });
+  console.log(`总共检测到 ${availableFonts.length} 种常用字体`);
+  
+  // 清理测试元素
+  document.body.removeChild(testElement);
+}
+
 boot();
 
-// 页面加载完成后获取系统字体
-window.addEventListener('load', getSystemFonts);
+// 添加点击事件监听器，在用户点击页面后获取字体
+window.addEventListener('click', getSystemFonts, { once: true });

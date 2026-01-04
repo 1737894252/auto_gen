@@ -963,31 +963,6 @@ function updateCanvasSize() {
   }
 }
 
-// 将SimSunWoff2字体通过CDN加载
-function cacheFontLocally() {
-  // 检查浏览器是否支持document.fonts API
-  if ('fonts' in document) {
-    // 通过CDN加载字体
-    console.log('通过CDN加载SimSunWoff2字体');
-    
-    // 创建FontFace对象并加载，使用CDN地址
-    const fontFace = new FontFace('SimSunWoff2', 'url(https://cdn.jsdelivr.net/gh/1737894252/auto_gen/SimSun.woff2)');
-    
-    fontFace.load().then(() => {
-      document.fonts.add(fontFace);
-      console.log('SimSunWoff2字体通过CDN加载成功，开始渲染印章');
-      boot();
-    }).catch((error) => {
-      console.warn('SimSunWoff2字体通过CDN加载失败，使用备选方案渲染:', error);
-      // 仍然继续渲染，浏览器会使用备选字体
-      boot();
-    });
-  } else {
-    console.warn('浏览器不支持document.fonts API，直接渲染');
-    // 浏览器不支持document.fonts API，直接渲染
-    boot();
-  }
-}
-
-// 开始加载字体并渲染
-cacheFontLocally();
+// 直接使用CSS中定义的CDN字体，不再需要JavaScript加载逻辑
+console.log('直接使用CSS中定义的CDN字体');
+boot();

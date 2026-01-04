@@ -126,9 +126,9 @@ function drawCircle(ctx, cx, cy, r, lineWidth, color) { ctx.beginPath(); ctx.arc
 
 function splitChars(s) { return Array.from(s) }
 
-function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', sans-serif`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
+function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', 'SimSun', serif`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
 
-function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', sans-serif`; ctx.fillText(text, cx, cy); ctx.restore() }
+function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', 'SimSun', serif`; ctx.fillText(text, cx, cy); ctx.restore() }
 
 // 修复renderSeal函数，确保正确接收ctx参数并设置透明背景
 function renderSeal(ctx, d, opts) {// 确保画布有透明背景
@@ -234,13 +234,7 @@ function drawBackground() {
 }
 
 // 全局函数：处理数字输入框的加减按钮点击事件
-function changeValue(id, operation, event) {
-  // 防止iOS双击缩放
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-  
+function changeValue(id, operation) {
   const input = document.getElementById(id);
   if (!input) return;
   
@@ -309,27 +303,6 @@ function boot() {
     starSize.addEventListener("input", update);
   }
   
-  // 添加+、-按钮的点击事件监听器，防止iOS双击缩放
-  const numberButtons = document.querySelectorAll(".number-btn");
-  console.log(`Found ${numberButtons.length} number buttons`);
-  
-  numberButtons.forEach(button => {
-    button.addEventListener("click", (event) => {
-      // 防止iOS双击缩放
-      event.preventDefault();
-      event.stopPropagation();
-      
-      // 获取按钮的data属性
-      const id = button.getAttribute("data-id");
-      const operation = button.getAttribute("data-operation");
-      
-      console.log(`Button clicked: id=${id}, operation=${operation}`);
-      
-      // 调用changeValue函数
-      changeValue(id, operation, event);
-    });
-  });
-  
   // 添加类型选择事件监听，当选择"其他"时显示自定义类型输入框
   if (type && customType) {
     type.addEventListener("change", function() {
@@ -373,8 +346,8 @@ function boot() {
   }
 
   function getFont() {
-    // 只返回woff2格式的宋体字体
-    return 'SimSunWoff2';
+    // 返回包含备选字体的字体族
+    return 'SimSunWoff2, SimSun, serif';
   }
   function positionOverlay(x, y) { const maxX = stage.clientWidth - (overlay.clientWidth || 0); const maxY = stage.clientHeight - (overlay.clientHeight || 0); currentX = Math.max(0, Math.min(x, maxX)); currentY = Math.max(0, Math.min(y, maxY)); overlay.style.left = currentX + "px"; overlay.style.top = currentY + "px" }
 
@@ -382,6 +355,28 @@ function boot() {
   let isDragging = false;
   let dragOffsetX = 0;
   let dragOffsetY = 0;
+
+  // 双指缩放相关变量
+  let isPinching = false;
+  let lastPinchDistance = 0;
+  let initialPinchDiameter = 0;
+  let pinchCenterX = 0;
+  let pinchCenterY = 0;
+
+  // 计算两点之间的距离
+  function getDistance(touch1, touch2) {
+    const dx = touch2.clientX - touch1.clientX;
+    const dy = touch2.clientY - touch1.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  // 计算两点之间的中心点
+  function getCenter(touch1, touch2) {
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2
+    };
+  }
 
   // 鼠标事件
   overlay.addEventListener('mousedown', (e) => {
@@ -413,7 +408,20 @@ function boot() {
 
   // 触摸事件
   overlay.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) {
+    if (e.touches.length === 2) {
+      // 双指触摸，开始缩放
+      isPinching = true;
+      lastPinchDistance = getDistance(e.touches[0], e.touches[1]);
+      initialPinchDiameter = parseInt(diameter.value, 10);
+
+      // 计算初始中心点
+      const center = getCenter(e.touches[0], e.touches[1]);
+      const stageRect = stage.getBoundingClientRect();
+      pinchCenterX = center.x - stageRect.left;
+      pinchCenterY = center.y - stageRect.top;
+
+      e.preventDefault();
+    } else if (e.touches.length === 1) {
       // 单指触摸，开始拖拽
       isDragging = true;
       const touch = e.touches[0];
@@ -426,7 +434,54 @@ function boot() {
   });
 
   document.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 1 && isDragging) {
+    if (e.touches.length === 2 && isPinching) {
+      // 双指移动，进行缩放
+      const currentDistance = getDistance(e.touches[0], e.touches[1]);
+      const scale = currentDistance / lastPinchDistance;
+
+      // 计算新的直径
+      let newDiameter = initialPinchDiameter * scale;
+      const minDiameter = parseInt(diameter.min, 10) || 100;
+      const maxDiameter = parseInt(diameter.max, 10) || 800;
+      newDiameter = Math.max(minDiameter, Math.min(maxDiameter, newDiameter));
+
+      // 计算新的中心点
+      const center = getCenter(e.touches[0], e.touches[1]);
+      const stageRect = stage.getBoundingClientRect();
+      const newCenterX = center.x - stageRect.left;
+      const newCenterY = center.y - stageRect.top;
+
+      // 保存当前直径，用于计算位置偏移
+      const oldDiameter = parseInt(diameter.value, 10);
+
+      // 更新直径输入框
+      diameter.value = Math.round(newDiameter);
+      const evt = new Event('input', { bubbles: true });
+      diameter.dispatchEvent(evt);
+
+      // 调整印章位置，使其中心保持在双指中心点
+      const oldHalfWidth = oldDiameter / 2;
+      const newHalfWidth = newDiameter / 2;
+
+      // 计算位置偏移：中心点变化 + 尺寸变化导致的偏移
+      const deltaX = (newCenterX - pinchCenterX) + (oldHalfWidth - newHalfWidth);
+      const deltaY = (newCenterY - pinchCenterY) + (oldHalfWidth - newHalfWidth);
+
+      // 更新位置
+      currentX += deltaX;
+      currentY += deltaY;
+      positionOverlay(currentX, currentY);
+      updateCoords();
+      saveConfig();
+
+      // 更新中心点和距离
+      pinchCenterX = newCenterX;
+      pinchCenterY = newCenterY;
+      lastPinchDistance = currentDistance;
+      initialPinchDiameter = newDiameter;
+
+      e.preventDefault();
+    } else if (e.touches.length === 1 && isDragging) {
       // 单指移动，进行拖拽
       const touch = e.touches[0];
       const stageRect = stage.getBoundingClientRect();
@@ -440,6 +495,9 @@ function boot() {
   });
 
   document.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) {
+      isPinching = false;
+    }
     if (e.touches.length < 1) {
       isDragging = false;
     }
@@ -657,9 +715,7 @@ function boot() {
       bottomSpacing: parseFloat(bottomSpacing.value),
       topRotateDeg: parseFloat(topRotateDeg.value),
       rotation: parseFloat(sealRotation?.value || 0),
-      roughness: parseInt(roughness.value, 10),
-      // 添加五角星大小
-      starSize: parseInt(starSize.value, 10)
+      roughness: parseInt(roughness.value, 10)
     };
 
     // 5. 直接渲染印章到画布
@@ -765,9 +821,7 @@ function boot() {
       bottomSpacing: parseFloat(bottomSpacing.value),
       topRotateDeg: parseFloat(topRotateDeg.value),
       rotation: parseFloat(sealRotation?.value || 0),
-      roughness: parseInt(roughness.value, 10),
-      // 添加五角星大小
-      starSize: parseInt(starSize.value, 10)
+      roughness: parseInt(roughness.value, 10)
     };
 
     // 创建临时高分辨率画布渲染印章
@@ -934,15 +988,25 @@ function boot() {
   // 为了方便用户查看，可以添加一个额外的“查看历史”按钮，或者让“生成到历史”按钮兼具打开功能（如果不生成）
   // 但为了简单，先保持这样。用户生成后会自动打开列表。
 
+  // 为所有加减按钮添加事件监听器
+  document.querySelectorAll('.number-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const operation = btn.dataset.operation;
+      changeValue(id, operation);
+    });
+  });
+
   // 初始渲染
   renderHistory();
 
-  // 重置localStorage，清除可能包含旧属性的配置
-  localStorage.removeItem('sealConfig');
-  
-  cfg = getResponsiveDefaults();
-  // 默认启用混合模式
-  cfg.blendOn = true;
+  // 先尝试从本地存储加载配置，如果没有则使用默认配置
+  let cfg = loadConfig();
+  if (!cfg) {
+    cfg = getResponsiveDefaults();
+  }
   applyInputs(cfg);
   update();
   // 页面加载完成后，保存当前配置（确保默认值也被保存）

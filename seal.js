@@ -937,84 +937,27 @@ function cacheFontLocally() {
   // 字体缓存的键名
   const fontCacheKey = 'simsun_woff2_cache';
   
-  // 检查浏览器是否支持document.fonts API和localStorage
-  if ('fonts' in document && 'localStorage' in window) {
-    try {
-      // 检查localStorage中是否已有缓存的字体
-      const cachedFont = localStorage.getItem(fontCacheKey);
-      
-      if (cachedFont) {
-        console.log('发现本地缓存的SimSunWoff2字体，从缓存加载');
-        // 从缓存创建FontFace对象
-        const fontFace = new FontFace('SimSunWoff2', `url(${cachedFont})`);
-        
-        // 加载缓存的字体
-        fontFace.load().then(() => {
-          document.fonts.add(fontFace);
-          console.log('缓存的SimSunWoff2字体加载成功，开始渲染印章');
-          boot();
-        }).catch((error) => {
-          console.warn('缓存的SimSunWoff2字体加载失败，重新下载:', error);
-          // 缓存的字体加载失败，重新下载
-          downloadAndCacheFont();
-        });
-      } else {
-        console.log('未发现本地缓存的SimSunWoff2字体，开始下载并缓存');
-        // 没有缓存，下载字体并缓存
-        downloadAndCacheFont();
-      }
-    } catch (error) {
-      console.warn('使用localStorage缓存字体时出错，直接下载:', error);
-      // 缓存操作出错，直接下载字体
-      downloadAndCacheFont();
-    }
+  // 检查浏览器是否支持document.fonts API
+  if ('fonts' in document) {
+    // 直接加载字体，不使用localStorage缓存
+    console.log('直接加载SimSunWoff2字体，不使用localStorage缓存');
+    
+    // 创建FontFace对象并加载
+    const fontFace = new FontFace('SimSunWoff2', 'url(SimSun.woff2)');
+    
+    fontFace.load().then(() => {
+      document.fonts.add(fontFace);
+      console.log('SimSunWoff2字体加载成功，开始渲染印章');
+      boot();
+    }).catch((error) => {
+      console.warn('SimSunWoff2字体加载失败，使用备选方案渲染:', error);
+      // 仍然继续渲染，浏览器会使用备选字体
+      boot();
+    });
   } else {
-    console.warn('浏览器不支持document.fonts API或localStorage，直接加载字体');
-    // 浏览器不支持必要的API，直接渲染
+    console.warn('浏览器不支持document.fonts API，直接渲染');
+    // 浏览器不支持document.fonts API，直接渲染
     boot();
-  }
-  
-  // 下载字体并缓存到localStorage的函数
-  function downloadAndCacheFont() {
-    // 下载字体文件
-    fetch('SimSun.woff2')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`字体下载失败，状态码: ${response.status}`);
-        }
-        return response.blob();
-      })
-      .then(blob => {
-        // 将字体文件转换为data URL
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      })
-      .then(dataUrl => {
-        // 缓存字体到localStorage
-        localStorage.setItem(fontCacheKey, dataUrl);
-        console.log('SimSunWoff2字体下载成功并缓存到本地');
-        
-        // 创建FontFace对象并加载
-        const fontFace = new FontFace('SimSunWoff2', `url(${dataUrl})`);
-        return fontFace.load();
-      })
-      .then(fontFace => {
-        // 字体加载成功，添加到文档中
-        document.fonts.add(fontFace);
-        console.log('SimSunWoff2字体加载成功，开始渲染印章');
-        // 开始渲染印章
-        boot();
-      })
-      .catch((error) => {
-        // 字体下载或缓存失败，使用备选方案
-        console.warn('SimSunWoff2字体下载或缓存失败，使用备选方案渲染:', error);
-        // 仍然继续渲染，浏览器会使用备选字体
-        boot();
-      });
   }
 }
 

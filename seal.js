@@ -630,7 +630,9 @@ function boot() {
       bottomSpacing: parseFloat(bottomSpacing.value),
       topRotateDeg: parseFloat(topRotateDeg.value),
       rotation: parseFloat(sealRotation?.value || 0),
-      roughness: parseInt(roughness.value, 10)
+      roughness: parseInt(roughness.value, 10),
+      // 添加五角星大小
+      starSize: parseInt(starSize.value, 10)
     };
 
     // 5. 直接渲染印章到画布
@@ -736,7 +738,9 @@ function boot() {
       bottomSpacing: parseFloat(bottomSpacing.value),
       topRotateDeg: parseFloat(topRotateDeg.value),
       rotation: parseFloat(sealRotation?.value || 0),
-      roughness: parseInt(roughness.value, 10)
+      roughness: parseInt(roughness.value, 10),
+      // 添加五角星大小
+      starSize: parseInt(starSize.value, 10)
     };
 
     // 创建临时高分辨率画布渲染印章

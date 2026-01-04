@@ -7,174 +7,281 @@
   font-display: swap;
 }
 
-.container{max-width:1400px;margin:24px auto;padding:0 16px;font-family:"SimSunWoff2";color:#222}
+.container {
+  max-width: 1400px;
+  margin: 24px auto;
+  padding: 0 16px;
+  font-family: "SimSunWoff2";
+  color: #222
+}
 
-.main-layout{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
-.controls{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px;align-items:end;flex:1;max-width:500px}
-.section-title{grid-column:1/-1;font-weight:600;color:#444;margin-top:8px}
-.arc-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px}
-.controls label{display:flex;flex-direction:column;gap:4px;font-size:13px}
-.controls input,.controls select{padding:8px;border:1px solid #ccc;border-radius:6px}
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 8px;
+  align-items: end;
+  flex: 1;
+  max-width: 500px
+}
+
+.section-title {
+  grid-column: 1/-1;
+  font-weight: 600;
+  color: #444;
+  margin-top: 8px
+}
+
+.arc-row {
+  grid-column: 1/-1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 8px
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px
+}
+
+.controls input,
+.controls select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px
+}
 
 /* 数字输入框组样式 */
-.number-input-group{
-  display:flex;
-  align-items:center;
-  gap:4px;
-  margin-top:4px;
+.number-input-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
 }
 
-.number-btn{
-  width:28px;
-  height:28px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:1px solid #ccc;
-  border-radius:4px;
-  background:#fff;
-  cursor:pointer;
-  font-size:14px;
-  font-weight:bold;
-  color:#333;
-  transition:all 0.2s ease;
+.number-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  transition: all 0.2s ease;
 }
 
-.number-btn:hover{
-  background:#f5f5f5;
-  border-color:#999;
+.number-btn:hover {
+  background: #f5f5f5;
+  border-color: #999;
 }
 
-.number-btn:active{
-  background:#e0e0e0;
-  transform:scale(0.95);
+.number-btn:active {
+  background: #e0e0e0;
+  transform: scale(0.95);
 }
 
-.number-input-group input[type="number"]{
-  width:60px;
-  text-align:center;
-  padding:4px;
-  border:1px solid #ccc;
-  border-radius:4px;
-  font-size:13px;
+.number-input-group input[type="number"] {
+  width: 60px;
+  text-align: center;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
 }
 
 /* 隐藏数字输入框的上下箭头 */
 .number-input-group input[type="number"]::-webkit-inner-spin-button,
-.number-input-group input[type="number"]::-webkit-outer-spin-button{
-  -webkit-appearance:none;
-  margin:0;
+.number-input-group input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.number-input-group input[type="number"]{
-  -moz-appearance:textfield;
+.number-input-group input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 
-.controls button{padding:10px 16px;border:0;border-radius:6px;background:#e53935;color:#fff;cursor:pointer}
-.controls button:hover{background:#d32f2f}
-.canvas-wrap{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:16px;background:#fafafa;border:1px solid #eee;border-radius:12px;flex:2;min-width:300px;position:relative;z-index:100}
-.stage{position:relative;width:300px;height:300px;background:#fff;border:1px solid #eee;border-radius:8px;overflow:hidden}
-#bgCanvas{position:absolute;inset:0;width:100%;height:100%}
-#sealOverlay{position:absolute;left:0;top:0;cursor:grab;user-select:none;touch-action:none;-webkit-user-drag:none}
-.toolbar{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px}
-.toolbar button{padding:8px 12px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
+.controls button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: #e53935;
+  color: #fff;
+  cursor: pointer
+}
+
+.controls button:hover {
+  background: #d32f2f
+}
+
+.canvas-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  flex: 2;
+  min-width: 300px;
+  position: relative;
+  z-index: 100
+}
+
+.stage {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden
+}
+
+#bgCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%
+}
+
+#sealOverlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  -webkit-user-drag: none
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px
+}
+
+.toolbar button {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer
+}
 
 
 /* 画布顶部操作按钮样式 */
-.canvas-top-buttons{
-  display:flex;
-  gap:16px;
-  align-items:center;
-  justify-content:flex-start;
-  margin-bottom:16px;
-  flex-wrap: wrap; /* Allow wrapping on small screens */
-  padding:12px;
-  background:#fff;
-  border:1px solid #eee;
-  border-radius:8px;
+.canvas-top-buttons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  /* Allow wrapping on small screens */
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
 }
 
-.input-group{
-  display:flex;
-  align-items:center;
-  gap:8px;
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.input-group label{
-  font-size:14px;
-  font-weight:bold;
-  color:#333;
+.input-group label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
 }
 
 .input-group input,
-.input-group select{
-  padding:8px 12px;
-  border:1px solid #ccc;
-  border-radius:6px;
-  font-size:14px;
-  min-width:150px;
+.input-group select {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 150px;
 }
 
-.input-group input#topText{
-  min-width:250px;
+.input-group input#topText {
+  min-width: 250px;
 }
 
-.input-group input#serial{
-  min-width:180px;
+.input-group input#serial {
+  min-width: 180px;
 }
 
-.file-input-wrapper{
-  position:relative;
-  display:inline-block;
-  padding:10px 20px;
-  border:1px solid #ccc;
-  border-radius:6px;
-  background:#fff;
-  color:#333;
-  font-size:14px;
-  cursor:pointer;
-  transition:all 0.3s ease;
-  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+.file-input-wrapper {
+  position: relative;
+  display: inline-block;
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.file-input-wrapper:hover{
-  background:#f5f5f5;
-  border-color:#999;
+.file-input-wrapper:hover {
+  background: #f5f5f5;
+  border-color: #999;
 }
 
-.file-input-wrapper input[type="file"]{
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  opacity:0;
-  cursor:pointer;
+.file-input-wrapper input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
 /* 主要按钮样式 */
-.primary-btn{
-  padding:10px 20px;
-  border:0;
-  border-radius:6px;
-  background:#e53935;
-  color:#fff;
-  font-size:14px;
-  cursor:pointer;
-  transition:all 0.3s ease;
-  box-shadow:0 2px 8px rgba(0,0,0,0.1);
-  font-weight:bold;
+.primary-btn {
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 6px;
+  background: #e53935;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
 }
 
-.primary-btn:hover{
-  background:#d32f2f;
+.primary-btn:hover {
+  background: #d32f2f;
   transform: translateY(-1px);
-  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.canvas-top-buttons #download{
-  display:none;
+.canvas-top-buttons #download {
+  display: none;
 }
 
 /* 操作空间样式 - 平铺在画布下方 */
@@ -182,48 +289,49 @@
   width: 100%;
   max-width: 500px;
   margin: 20px auto;
-  overflow-y: visible;
-  max-height: none;
+  overflow-y: scroll;
+  max-height: 30vh;
   border: 1px solid #eee;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.controls-container{
-  position:static;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  z-index:90;
-  width:100%;
-  height:fit-content;
-  flex-shrink:0;
+.controls-container {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 90;
+  width: 100%;
+  height: fit-content;
+  flex-shrink: 0;
 }
 
-.controls-box{
-  background:#fff;
-  padding:20px;
-  border-radius:8px;
-  box-shadow:none;
-  border:none;
-  width:100%;
-  box-sizing:border-box;
-  max-height:none;
-  overflow-y:visible;
-  position:relative;
-  z-index:1;
+.controls-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: none;
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+  max-height: none;
+  overflow-y: visible;
+  position: relative;
+  z-index: 1;
 }
 
 /* 历史记录面板样式 */
 .history-panel {
   position: absolute;
-  top: 45px; /* Adjust based on toggle button height */
+  top: 45px;
+  /* Adjust based on toggle button height */
   right: 0;
   width: 100%;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 200;
   max-height: 70vh;
   display: flex;
@@ -334,24 +442,24 @@
     flex-direction: column;
     align-items: center;
   }
-  
+
   .controls-container {
     position: static;
     width: 100%;
     max-width: 800px;
     align-items: center;
   }
-  
+
   .controls-toggle {
     width: 100%;
     text-align: center;
     border-radius: 8px 8px 0 0;
   }
-  
+
   .controls-box {
     border-radius: 0 0 8px 8px;
   }
-  
+
   .controls {
     max-width: 100%;
     grid-template-columns: repeat(2, minmax(120px, 1fr));
@@ -364,21 +472,21 @@
     padding: 10px;
     min-width: unset;
   }
-  
+
   .controls {
     grid-template-columns: repeat(2, minmax(100px, 1fr));
   }
-  
+
   .arc-row {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .section-title {
     margin-top: 16px;
     padding-bottom: 8px;
     border-bottom: 1px solid #eee;
   }
-  
+
   /* 移动端按钮栏换行 */
   .canvas-top-buttons {
     justify-content: center;
@@ -390,17 +498,19 @@
     padding: 0 8px;
     margin: 12px auto;
   }
-  
+
   .arc-row {
-    grid-template-columns: 1fr 1fr; /* 确保弧形参数在一行显示两个 */
+    grid-template-columns: 1fr 1fr;
+    /* 确保弧形参数在一行显示两个 */
   }
-  
+
   /* 调整按钮大小 */
-  .primary-btn, .file-input-wrapper {
+  .primary-btn,
+  .file-input-wrapper {
     padding: 8px 16px;
     font-size: 13px;
   }
-  
+
   .history-item img {
     width: 50px;
     height: 50px;
@@ -413,13 +523,13 @@
     padding: 0 4px;
     margin: 4px auto;
   }
-  
+
   .canvas-wrap {
     padding: 4px;
     border-radius: 6px;
   }
-  
-  .controls input[type="text"], 
+
+  .controls input[type="text"],
   .controls input[type="number"],
   .controls select {
     padding: 6px;

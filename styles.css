@@ -182,8 +182,8 @@
   width: 100%;
   max-width: 500px;
   margin: 20px auto;
-  overflow-y: scroll;
-  max-height: calc(100vh - 400px);
+  overflow-y: visible;
+  max-height: none;
   border: 1px solid #eee;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);

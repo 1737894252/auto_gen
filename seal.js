@@ -153,7 +153,9 @@ function renderSeal(ctx, d, opts) {// 确保画布有透明背景
 
   // 使用用户设置的topFontSize和topFontHeight
   drawArcText(ctx, topText, cx, cy, topRadius, topStart, topEnd, opts.topFontSize, fontFamily, color, false, "radial", topRotate, opts.topFontHeight || 1.0);
-  const starOuter = d * 0.14; const starInner = d * 0.052;
+  // 使用用户设置的五角星大小
+  const starOuter = opts.starSize || (d * 0.14);
+  const starInner = starOuter * 0.382; // 内半径约为外半径的0.382倍（黄金比例）
   drawStar(ctx, cx, cy, starOuter, starInner, color);
   const typeSize = baseSize * 1.2;
   drawCenterText(ctx, typeText, cx, cy + d * 0.22, typeSize, fontFamily, color);
@@ -191,7 +193,9 @@ function renderSealToCanvas(cctx, d, opts) {// 确保画布有透明背景
 
   // 使用用户设置的topFontSize和topFontHeight
   drawArcText(cctx, topText, cx, cy, topRadius, topStart, topEnd, opts.topFontSize, fontFamily, color, false, "radial", topRotate, opts.topFontHeight || 1.0);
-  const starOuter = d * 0.14; const starInner = d * 0.052;
+  // 使用用户设置的五角星大小
+  const starOuter = opts.starSize || (d * 0.14);
+  const starInner = starOuter * 0.382; // 内半径约为外半径的0.382倍（黄金比例）
   drawStar(cctx, cx, cy, starOuter, starInner, color);
   const typeSize = baseSize * 1.2;
   drawCenterText(cctx, typeText, cx, cy + d * 0.22, typeSize, fontFamily, color);
@@ -282,33 +286,57 @@ function boot() {
   const sealRotation = $("sealRotation");
   // 添加做旧程度控制
   const roughness = $("roughness");
+  // 添加五角星大小控制
+  const starSize = $("starSize");
   // 添加操作空间开关控制
   const controlsToggle = $("controlsToggle");
   const controlsBox = $("controlsBox");
+  // 添加自定义类型输入框
+  const customType = $("customType");
   let currentX = 0, currentY = 0;
 
   // 添加上弧字高控制
   const topFontHeight = $("topFontHeight");
+  
+  // 添加五角星大小输入事件监听
+  if (starSize) {
+    starSize.addEventListener("input", update);
+  }
+  
+  // 添加类型选择事件监听，当选择"其他"时显示自定义类型输入框
+  if (type && customType) {
+    type.addEventListener("change", function() {
+      if (this.value === "其他") {
+        customType.style.display = "inline-block";
+      } else {
+        customType.style.display = "none";
+      }
+      update();
+    });
+    
+    // 添加自定义类型输入事件监听
+    customType.addEventListener("input", update);
+  }
 
   function getResponsiveDefaults() {
     return {
-      diameter: "200",
+      diameter: "250",
       ringWidth: "7",
-      fontSize: "20",
+      fontSize: "25",
       sealRotation: "0",
       roughness: "0",
-
+      starSize: "40",
       topStartDeg: "168",
-      topOffset: "20",
+      topOffset: "25",
       topSpacing: "1.06",
       topRotateDeg: "98",
-      topFontSize: "22",
-      topFontHeight: "1.5",
+      topFontSize: "25",
+      topFontHeight: "1.7",
 
       bottomStartDeg: "126",
       bottomOffset: "13",
       bottomSpacing: "0.54",
-      bottomFontSize: "16",
+      bottomFontSize: "20",
 
       type: "居民委员会",
       topText: "赣州市南昌县琴城镇新建社区",
@@ -327,28 +355,6 @@ function boot() {
   let isDragging = false;
   let dragOffsetX = 0;
   let dragOffsetY = 0;
-
-  // 双指缩放相关变量
-  let isPinching = false;
-  let lastPinchDistance = 0;
-  let initialPinchDiameter = 0;
-  let pinchCenterX = 0;
-  let pinchCenterY = 0;
-
-  // 计算两点之间的距离
-  function getDistance(touch1, touch2) {
-    const dx = touch2.clientX - touch1.clientX;
-    const dy = touch2.clientY - touch1.clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  // 计算两点之间的中心点
-  function getCenter(touch1, touch2) {
-    return {
-      x: (touch1.clientX + touch2.clientX) / 2,
-      y: (touch1.clientY + touch2.clientY) / 2
-    };
-  }
 
   // 鼠标事件
   overlay.addEventListener('mousedown', (e) => {
@@ -380,20 +386,7 @@ function boot() {
 
   // 触摸事件
   overlay.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 2) {
-      // 双指触摸，开始缩放
-      isPinching = true;
-      lastPinchDistance = getDistance(e.touches[0], e.touches[1]);
-      initialPinchDiameter = parseInt(diameter.value, 10);
-
-      // 计算初始中心点
-      const center = getCenter(e.touches[0], e.touches[1]);
-      const stageRect = stage.getBoundingClientRect();
-      pinchCenterX = center.x - stageRect.left;
-      pinchCenterY = center.y - stageRect.top;
-
-      e.preventDefault();
-    } else if (e.touches.length === 1) {
+    if (e.touches.length === 1) {
       // 单指触摸，开始拖拽
       isDragging = true;
       const touch = e.touches[0];
@@ -406,54 +399,7 @@ function boot() {
   });
 
   document.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 2 && isPinching) {
-      // 双指移动，进行缩放
-      const currentDistance = getDistance(e.touches[0], e.touches[1]);
-      const scale = currentDistance / lastPinchDistance;
-
-      // 计算新的直径
-      let newDiameter = initialPinchDiameter * scale;
-      const minDiameter = parseInt(diameter.min, 10) || 100;
-      const maxDiameter = parseInt(diameter.max, 10) || 800;
-      newDiameter = Math.max(minDiameter, Math.min(maxDiameter, newDiameter));
-
-      // 计算新的中心点
-      const center = getCenter(e.touches[0], e.touches[1]);
-      const stageRect = stage.getBoundingClientRect();
-      const newCenterX = center.x - stageRect.left;
-      const newCenterY = center.y - stageRect.top;
-
-      // 保存当前直径，用于计算位置偏移
-      const oldDiameter = parseInt(diameter.value, 10);
-
-      // 更新直径输入框
-      diameter.value = Math.round(newDiameter);
-      const evt = new Event('input', { bubbles: true });
-      diameter.dispatchEvent(evt);
-
-      // 调整印章位置，使其中心保持在双指中心点
-      const oldHalfWidth = oldDiameter / 2;
-      const newHalfWidth = newDiameter / 2;
-
-      // 计算位置偏移：中心点变化 + 尺寸变化导致的偏移
-      const deltaX = (newCenterX - pinchCenterX) + (oldHalfWidth - newHalfWidth);
-      const deltaY = (newCenterY - pinchCenterY) + (oldHalfWidth - newHalfWidth);
-
-      // 更新位置
-      currentX += deltaX;
-      currentY += deltaY;
-      positionOverlay(currentX, currentY);
-      updateCoords();
-      saveConfig();
-
-      // 更新中心点和距离
-      pinchCenterX = newCenterX;
-      pinchCenterY = newCenterY;
-      lastPinchDistance = currentDistance;
-      initialPinchDiameter = newDiameter;
-
-      e.preventDefault();
-    } else if (e.touches.length === 1 && isDragging) {
+    if (e.touches.length === 1 && isDragging) {
       // 单指移动，进行拖拽
       const touch = e.touches[0];
       const stageRect = stage.getBoundingClientRect();
@@ -467,9 +413,6 @@ function boot() {
   });
 
   document.addEventListener('touchend', (e) => {
-    if (e.touches.length < 2) {
-      isPinching = false;
-    }
     if (e.touches.length < 1) {
       isDragging = false;
     }
@@ -486,7 +429,7 @@ function boot() {
   }
   function captureConfig() {
     return {
-      type: type.value,
+      type: getCurrentType(),
       topText: topText.value,
       serial: serial.value,
       diameter: diameter.value,
@@ -541,9 +484,16 @@ function boot() {
     if (cfg.overlayX != null) currentX = parseFloat(cfg.overlayX);
     if (cfg.overlayY != null) currentY = parseFloat(cfg.overlayY);
   }
+  function getCurrentType() {
+    if (type.value === "其他" && customType.value.trim()) {
+      return customType.value.trim();
+    }
+    return type.value;
+  }
+  
   function buildOpts() {
     return {
-      type: type.value,
+      type: getCurrentType(),
       topText: topText.value.trim() || "赣州市南昌县琴城镇新建社区",
       serial: serial.value.trim() || "3610231000004",
       diameter: parseInt(diameter.value, 10),
@@ -562,12 +512,14 @@ function boot() {
       bottomSpacing: parseFloat(bottomSpacing.value),
       topRotateDeg: parseFloat(topRotateDeg.value),
       // 添加印章旋转角度
-      rotation: parseFloat(sealRotation?.value || 0)
+      rotation: parseFloat(sealRotation?.value || 0),
+      // 添加五角星大小
+      starSize: parseInt(starSize.value, 10)
     }
   }
   function update() {
     const opts = {
-      type: type.value,
+      type: getCurrentType(),
       topText: topText.value.trim() || "赣州市南昌县琴城镇新建社区",
       serial: serial.value.trim() || "3610231000004",
       diameter: parseInt(diameter.value, 10),
@@ -588,7 +540,9 @@ function boot() {
       // 添加印章旋转角度
       rotation: parseFloat(sealRotation?.value || 0),
       // 添加做旧程度
-      roughness: parseInt(roughness.value, 10)
+      roughness: parseInt(roughness.value, 10),
+      // 添加五角星大小
+      starSize: parseInt(starSize.value, 10)
     };
 
     // 直接在全局canvas上渲染印章，然后转换为data URL
@@ -658,7 +612,7 @@ function boot() {
 
     // 4. 重构opts对象，用于渲染高分辨率印章
     const opts = {
-      type: type.value,
+      type: getCurrentType(),
       topText: topText.value.trim() || "赣州市南昌县琴城镇新建社区",
       serial: serial.value.trim() || "3610231000004",
       diameter: sealSize,
@@ -685,7 +639,7 @@ function boot() {
     // 6. 生成高质量的PNG图片，使用最高质量参数
     const a = document.createElement("a");
     a.href = exp.toDataURL("image/png", 1.0); // 使用最高质量参数
-    a.download = `${topText.value.trim() || "示例"}-${type.value}-印章.png`;
+    a.download = `${topText.value.trim() || "示例"}-${getCurrentType()}-印章.png`;
     a.click();
   });
 
@@ -764,7 +718,7 @@ function boot() {
 
     // 重构opts对象，用于重新渲染高分辨率印章
     const opts = {
-      type: type.value,
+      type: getCurrentType(),
       topText: topText.value.trim() || "赣州市南昌县琴城镇新建社区",
       serial: serial.value.trim() || "3610231000004",
       diameter: parseInt(diameter.value, 10),
@@ -808,7 +762,7 @@ function boot() {
     // 生成高质量的PNG图片，使用最高质量参数
     const a = document.createElement("a");
     a.href = exp.toDataURL("image/png", 1.0); // 使用最高质量参数
-    a.download = `${topText.value.trim() || "示例"}-${type.value}-合成.png`;
+    a.download = `${topText.value.trim() || "示例"}-${getCurrentType()}-合成.png`;
     a.click();
 
     // 重置流程，允许重新设计

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>印章自动生成</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <div class="container">
     <div class="main-layout">
@@ -17,7 +19,9 @@
             <select id="type">
               <option value="居民委员会">居民委员会</option>
               <option value="村民委员会">村民委员会</option>
+              <option value="其他">其他</option>
             </select>
+            <input id="customType" type="text" placeholder="请输入自定义类型" style="display: none; margin-left: 10px;" />
           </div>
           <div class="input-group">
             <label for="topText">单位名称:</label>
@@ -34,7 +38,7 @@
           </label>
           <button id="saveBtn" class="primary-btn" style="display: none;">保存并下载</button>
         </div>
-        
+
         <div id="stage" class="stage">
           <canvas id="bgCanvas"></canvas>
           <img id="sealOverlay" alt="seal" draggable="false" ondragstart="return false" />
@@ -45,7 +49,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 操作空间盒子 - 平铺在画布下方 -->
     <div class="controls-wrapper">
       <div class="controls-container">
@@ -68,14 +72,7 @@
                 <button class="number-btn" onclick="changeValue('ringWidth', '+')">+</button>
               </div>
             </label>
-            <label>
-              类型字号(px)
-              <div class="number-input-group">
-                <button class="number-btn" onclick="changeValue('fontSize', '-')">-</button>
-                <input id="fontSize" type="number" min="0" max="64" value="42" step="1" />
-                <button class="number-btn" onclick="changeValue('fontSize', '+')">+</button>
-              </div>
-            </label>
+
 
             <label>
               做旧程度
@@ -85,7 +82,8 @@
                 <button class="number-btn" onclick="changeValue('roughness', '+')">+</button>
               </div>
             </label>
-            <div class="section-title">单位名称参数</div>
+
+            <div class="section-title">单位名称</div>
             <div class="arc-row">
               <label>
                 起始角(°)
@@ -104,6 +102,7 @@
                 </div>
               </label>
             </div>
+
             <div class="arc-row">
               <label>
                 字距(倍数)
@@ -135,13 +134,33 @@
                 字高(倍数)
                 <div class="number-input-group">
                   <button class="number-btn" onclick="changeValue('topFontHeight', '-')">-</button>
-                  <input id="topFontHeight" type="number" min="0.5" max="2.0" value="1.0" step="0.1" />
+                  <input id="topFontHeight" type="number" min="0.5" max="3.0" value="1.0" step="0.1" />
                   <button class="number-btn" onclick="changeValue('topFontHeight', '+')">+</button>
                 </div>
               </label>
             </div>
-            
-            <div class="section-title">行政编码（下弧）参数</div>
+            <div class="section-title">类型、五角星样式</div>
+
+            <div class="arc-row">
+              <label>
+                类型字号(px)
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('fontSize', '-')">-</button>
+                  <input id="fontSize" type="number" min="0" max="64" value="42" step="1" />
+                  <button class="number-btn" onclick="changeValue('fontSize', '+')">+</button>
+                </div>
+              </label>
+
+              <label>
+                五角星大小(px)
+                <div class="number-input-group">
+                  <button class="number-btn" onclick="changeValue('starSize', '-')">-</button>
+                  <input id="starSize" type="number" min="10" max="200" value="40" step="1" />
+                  <button class="number-btn" onclick="changeValue('starSize', '+')">+</button>
+                </div>
+              </label>
+            </div>
+            <div class="section-title">行政编码</div>
             <div class="arc-row">
               <label>
                 起始角(°)
@@ -185,4 +204,5 @@
   </div>
   <script src="seal.js"></script>
 </body>
+
 </html>

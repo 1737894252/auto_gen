@@ -1,7 +1,7 @@
-/* 定义woff2格式的宋体字体 */
+/* 定义woff2格式的宋体字体，通过CDN加载 */
 @font-face {
   font-family: 'SimSunWoff2';
-  src: url('SimSun.woff2') format('woff2');
+  src: url('https://cdn.jsdelivr.net/gh/1737894252/auto_gen/SimSun.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -290,7 +290,7 @@
   max-width: 500px;
   margin: 20px auto;
   overflow-y: scroll;
-  max-height: 45vh;
+  max-height: 40vh;
   border: 1px solid #eee;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

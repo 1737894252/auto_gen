@@ -44,11 +44,12 @@
           <span id="canvasSize">画布尺寸: 0 x 0</span>
         </div>
       </div>
-      
-      <!-- 操作空间盒子 - 悬浮在页面右侧 -->
+    </div>
+    
+    <!-- 操作空间盒子 - 平铺在画布下方 -->
+    <div class="controls-wrapper">
       <div class="controls-container">
-        <button id="controlsToggle" class="controls-toggle">⚙️ 操作面板</button>
-        <div id="controlsBox" class="controls-box" style="display: none;">
+        <div id="controlsBox" class="controls-box">
           <div class="controls">
             <div class="section-title">尺寸与样式</div>
             <label>
@@ -154,7 +155,7 @@
                 距外圈(px)
                 <div class="number-input-group">
                   <button class="number-btn" onclick="changeValue('bottomOffset', '-')">-</button>
-                  <input id="bottomOffset" type="number" min="4" max="60" value="28" step="1" />
+                  <input id="bottomOffset" type="number" min="0" max="60" value="28" step="1" />
                   <button class="number-btn" onclick="changeValue('bottomOffset', '+')">+</button>
                 </div>
               </label>
@@ -164,7 +165,7 @@
                 字距(倍数)
                 <div class="number-input-group">
                   <button class="number-btn" onclick="changeValue('bottomSpacing', '-')">-</button>
-                  <input id="bottomSpacing" type="number" min="0.1" max="2" value="1.0" step="0.02" />
+                  <input id="bottomSpacing" type="number" min="0" max="2" value="1.0" step="0.01" />
                   <button class="number-btn" onclick="changeValue('bottomSpacing', '+')">+</button>
                 </div>
               </label>

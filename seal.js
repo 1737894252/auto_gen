@@ -126,9 +126,9 @@ function drawCircle(ctx, cx, cy, r, lineWidth, color) { ctx.beginPath(); ctx.arc
 
 function splitChars(s) { return Array.from(s) }
 
-function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'LocalSimSun', 'SimSun', serif`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
+function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSun', '宋体', serif`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
 
-function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'LocalSimSun', 'SimSun', serif`; ctx.fillText(text, cx, cy); ctx.restore() }
+function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSun', '宋体', serif`; ctx.fillText(text, cx, cy); ctx.restore() }
 
 // 修复renderSeal函数，确保正确接收ctx参数并设置透明背景
 function renderSeal(ctx, d, opts) {// 确保画布有透明背景
@@ -317,7 +317,7 @@ function boot() {
     };
   }
 
-  function getFont() { return 'LocalSimSun' }
+  function getFont() { return 'SimSun' }
   function positionOverlay(x, y) { const maxX = stage.clientWidth - (overlay.clientWidth || 0); const maxY = stage.clientHeight - (overlay.clientHeight || 0); currentX = Math.max(0, Math.min(x, maxX)); currentY = Math.max(0, Math.min(y, maxY)); overlay.style.left = currentX + "px"; overlay.style.top = currentY + "px" }
 
   // 添加拖拽功能的鼠标和触摸事件监听器
@@ -472,14 +472,6 @@ function boot() {
     }
   });
   function updateCoords() { const fx = currentX.toFixed(2), fy = currentY.toFixed(2); $("coords").textContent = `X: ${fx}, Y: ${fy}` }
-  function saveConfig() {
-    try {
-      const config = captureConfig();
-      localStorage.setItem("sealConfig", JSON.stringify(config));
-    } catch (e) {
-      console.error("保存配置失败:", e);
-    }
-  }
   function loadConfig() {
     try {
       const config = localStorage.getItem("sealConfig");
@@ -487,6 +479,39 @@ function boot() {
     } catch (e) {
       console.error("加载配置失败:", e);
       return null;
+    }
+  }
+  function captureConfig() {
+    return {
+      type: type.value,
+      topText: topText.value,
+      serial: serial.value,
+      diameter: diameter.value,
+      ringWidth: ringWidth.value,
+      fontSize: fontSize.value,
+      
+      sealRotation: sealRotation?.value || 0,
+      roughness: roughness.value,
+      topStartDeg: topStartDeg.value,
+      topOffset: topOffset.value,
+      topSpacing: topSpacing.value,
+      topRotateDeg: topRotateDeg.value,
+      topFontSize: topFontSize.value,
+      topFontHeight: topFontHeight.value,
+      bottomStartDeg: bottomStartDeg.value,
+      bottomOffset: bottomOffset.value,
+      bottomSpacing: bottomSpacing.value,
+      bottomFontSize: bottomFontSize.value,
+      overlayX: currentX,
+      overlayY: currentY
+    };
+  }
+  function saveConfig() {
+    try {
+      const config = captureConfig();
+      localStorage.setItem("sealConfig", JSON.stringify(config));
+    } catch (e) {
+      console.error("保存配置失败:", e);
     }
   }
   function applyInputs(cfg) {
@@ -525,7 +550,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: getFont(),
+      fontFamily: 'SimSun',
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -549,7 +574,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: 'LocalSimSun',
+      fontFamily: 'SimSun',
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -639,7 +664,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: 'LocalSimSun',
+      fontFamily: 'SimSun',
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -745,7 +770,7 @@ function boot() {
       topFontSize: parseInt(topFontSize.value, 10),
       topFontHeight: parseFloat(topFontHeight.value),
       bottomFontSize: parseInt(bottomFontSize.value, 10),
-      fontFamily: 'LocalSimSun',
+      fontFamily: 'SimSun',
       topStartDeg: parseFloat(topStartDeg.value),
       bottomStartDeg: parseFloat(bottomStartDeg.value),
       topOffset: parseFloat(topOffset.value),
@@ -839,32 +864,6 @@ function boot() {
   const closeHistoryBtn = $("closeHistoryBtn");
 
   // 显示生成历史按钮
-
-  function captureConfig() {
-    return {
-      type: type.value,
-      topText: topText.value,
-      serial: serial.value,
-      diameter: diameter.value,
-      ringWidth: ringWidth.value,
-      fontSize: fontSize.value,
-      
-      sealRotation: sealRotation.value,
-      roughness: roughness.value,
-      topStartDeg: topStartDeg.value,
-      topOffset: topOffset.value,
-      topSpacing: topSpacing.value,
-      topRotateDeg: topRotateDeg.value,
-      topFontSize: topFontSize.value,
-      topFontHeight: topFontHeight.value,
-      bottomStartDeg: bottomStartDeg.value,
-      bottomOffset: bottomOffset.value,
-      bottomSpacing: bottomSpacing.value,
-      bottomFontSize: bottomFontSize.value,
-      overlayX: currentX,
-      overlayY: currentY
-    };
-  }
 
   function getHistory() {
     try {

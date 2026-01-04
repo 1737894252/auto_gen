@@ -1,15 +1,6 @@
-/* 定义本地宋体字体 */
-@font-face {
-  font-family: 'LocalSimSun';
-  src: url('simsun.ttc') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
+.container{max-width:1400px;margin:24px auto;padding:0 16px;font-family:"Microsoft YaHei","Noto Sans SC","SimSun","宋体",sans-serif;color:#222}
 
-.container{max-width:1400px;margin:24px auto;padding:0 16px;font-family:"Microsoft YaHei","Noto Sans SC","SimSun","LocalSimSun",sans-serif;color:#222}
-
-.main-layout{display:flex;gap:24px;align-items:flex-start}
+.main-layout{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
 .controls{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px;align-items:end;flex:1;max-width:500px}
 .section-title{grid-column:1/-1;font-weight:600;color:#444;margin-top:8px}
 .arc-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px}
@@ -177,44 +168,39 @@
   display:none;
 }
 
-/* 操作空间样式 - 随着滚动条始终保持在右边 */
-.controls-container{
-  position:sticky;
-  top:20px;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-end;
-  z-index:90;
-  width:500px;
-  height:fit-content;
-  flex-shrink:0;
+/* 操作空间样式 - 平铺在画布下方 */
+.controls-wrapper {
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  overflow-y: scroll;
+  max-height: calc(100vh - 400px);
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.controls-toggle{
-  padding:10px 20px;
-  border:1px solid #ccc;
-  border-radius:8px 8px 0 0;
-  background:#fff;
-  color:#333;
-  font-size:14px;
-  cursor:pointer;
-  margin-bottom:0; /* Remove margin as it connects to the box */
-  box-shadow:0 -2px 8px rgba(0,0,0,0.05);
-  border-bottom:none;
-  position:relative;
-  z-index:2;
+.controls-container{
+  position:static;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  z-index:90;
+  width:100%;
+  height:fit-content;
+  flex-shrink:0;
 }
 
 .controls-box{
   background:#fff;
   padding:20px;
-  border-radius:8px 0 8px 8px; /* Top-right corner is square to connect with button */
-  box-shadow:0 4px 12px rgba(0,0,0,0.1);
-  border:1px solid #eee;
+  border-radius:8px;
+  box-shadow:none;
+  border:none;
   width:100%;
   box-sizing:border-box;
-  max-height:80vh;
-  overflow-y:scroll;
+  max-height:none;
+  overflow-y:visible;
   position:relative;
   z-index:1;
 }

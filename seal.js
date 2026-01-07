@@ -126,9 +126,9 @@ function drawCircle(ctx, cx, cy, r, lineWidth, color) { ctx.beginPath(); ctx.arc
 
 function splitChars(s) { return Array.from(s) }
 
-function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', 'SimSun', serif`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
+function drawArcText(ctx, text, cx, cy, r, start, end, fontSize, fontFamily, color, invert = false, orientation = "tangent", rotateOffsetRad = 0, fontHeight = 1.0) { const chars = splitChars(text); if (chars.length === 0) return; const total = end - start; const step = chars.length > 1 ? total / (chars.length - 1) : 0; ctx.save(); ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', 'SimSunFallback', SimSun, serif`; for (let i = 0; i < chars.length; i++) { const angle = start + step * i; ctx.save(); ctx.translate(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r); const rot = orientation === "radial" ? (angle + (invert ? Math.PI : 0) + rotateOffsetRad) : (angle + (invert ? -Math.PI / 2 : Math.PI / 2) + rotateOffsetRad); ctx.rotate(rot); if (fontHeight !== 1.0) { ctx.scale(1, fontHeight); } ctx.fillText(chars[i], 0, 0); ctx.restore() } ctx.restore() }
 
-function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', 'SimSun', serif`; ctx.fillText(text, cx, cy); ctx.restore() }
+function drawCenterText(ctx, text, cx, cy, fontSize, fontFamily, color) { ctx.save(); ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `${fontSize}px 'SimSunWoff2', 'SimSunFallback', SimSun, serif`; ctx.fillText(text, cx, cy); ctx.restore() }
 
 // 修复renderSeal函数，确保正确接收ctx参数并设置透明背景
 function renderSeal(ctx, d, opts) {// 确保画布有透明背景
@@ -346,8 +346,8 @@ function boot() {
   }
 
   function getFont() {
-    // 返回包含备选字体的字体族
-    return 'SimSunWoff2, SimSun, serif';
+    // 返回包含备选字体的完整字体族，确保iOS浏览器兼容
+    return 'SimSunWoff2, SimSunFallback, SimSun, serif';
   }
   function positionOverlay(x, y) { const maxX = stage.clientWidth - (overlay.clientWidth || 0); const maxY = stage.clientHeight - (overlay.clientHeight || 0); currentX = Math.max(0, Math.min(x, maxX)); currentY = Math.max(0, Math.min(y, maxY)); overlay.style.left = currentX + "px"; overlay.style.top = currentY + "px" }
 
@@ -1027,6 +1027,32 @@ function updateCanvasSize() {
   }
 }
 
-// 直接使用CSS中定义的CDN字体，不再需要JavaScript加载逻辑
-console.log('直接使用CSS中定义的CDN字体');
-boot();
+// 字体加载完成后再初始化，确保iOS浏览器能正确显示字体
+function initWithFont() {
+  // 创建一个测试元素来检测字体是否加载完成
+  const testElement = document.createElement('div');
+  testElement.style.position = 'absolute';
+  testElement.style.left = '-9999px';
+  testElement.style.fontFamily = 'SimSunWoff2, SimSun, serif';
+  testElement.style.fontSize = '20px';
+  testElement.textContent = '测试字体';
+  document.body.appendChild(testElement);
+  
+  // 等待字体加载完成或超时
+  const checkFontLoad = () => {
+    // 直接初始化，不再依赖字体加载检测
+    // 这种方式更兼容iOS浏览器
+    document.body.removeChild(testElement);
+    boot();
+  };
+  
+  // 延迟初始化，确保字体有时间加载
+  setTimeout(checkFontLoad, 500);
+}
+
+// 页面加载完成后初始化
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initWithFont);
+} else {
+  initWithFont();
+}

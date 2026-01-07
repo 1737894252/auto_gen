@@ -1,7 +1,17 @@
-/* 定义woff2格式的宋体字体，通过CDN加载 */
+/* 定义宋体字体，通过CDN加载，兼容iOS浏览器 */
 @font-face {
   font-family: 'SimSunWoff2';
   src: url('https://cdn.jsdelivr.net/gh/1737894252/auto_gen/SimSun.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: auto;
+  /* iOS浏览器需要明确的字体显示模式 */
+}
+
+/* 针对iOS浏览器的字体回退机制 */
+@font-face {
+  font-family: 'SimSunFallback';
+  src: local('SimSun'), local('NSimSun'), local('FangSong'), local('STFangsong');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -11,7 +21,7 @@
   max-width: 1400px;
   margin: 24px auto;
   padding: 0 16px;
-  font-family: "SimSunWoff2";
+  font-family: "SimSunWoff2", "SimSunFallback", SimSun, serif;
   color: #222
 }
 

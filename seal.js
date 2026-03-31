@@ -320,28 +320,27 @@ function boot() {
 
   function getResponsiveDefaults() {
     return {
-      diameter: "250",
-      ringWidth: "7",
-      fontSize: "25",
+      diameter: "280",
+      ringWidth: "8",
+      fontSize: "20",
       sealRotation: "0",
       roughness: "0",
-      starSize: "40",
-      topStartDeg: "168",
-      topOffset: "25",
-      topSpacing: "1.06",
-      topRotateDeg: "98",
-      topFontSize: "25",
-      topFontHeight: "1.7",
+      starSize: "36",
+      topStartDeg: "210",
+      topOffset: "18",
+      topSpacing: "0.82",
+      topRotateDeg: "90",
+      topFontSize: "22",
+      topFontHeight: "1.2",
 
-      bottomStartDeg: "126",
-      bottomOffset: "13",
-      bottomSpacing: "0.54",
-      bottomFontSize: "20",
+      bottomStartDeg: "150",
+      bottomOffset: "18",
+      bottomSpacing: "0.50",
+      bottomFontSize: "14",
 
       type: "居民委员会",
       topText: "赣州市南昌县琴城镇新建社区",
       serial: "3610231000004",
-      
     };
   }
 

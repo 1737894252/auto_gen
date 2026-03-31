@@ -3,7 +3,10 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="format-detection" content="telephone=no" />
   <title>印章自动生成</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -13,39 +16,9 @@
     <div class="main-layout">
       <div class="canvas-wrap">
         <!-- 画布顶部操作按钮 - 分步显示 -->
-        <div class="canvas-top-buttons">
-          <div class="input-group">
-            <label for="type">类型:</label>
-            <select id="type">
-              <option value="居民委员会">居民委员会</option>
-              <option value="村民委员会">村民委员会</option>
-              <option value="其他">其他</option>
-            </select>
-            <input id="customType" type="text" placeholder="请输入自定义类型" style="display: none; margin-left: 10px;" />
-          </div>
-          <div class="input-group">
-            <label for="topText">单位名称:</label>
-            <input id="topText" value="赣州市南昌县琴城镇新建社区" placeholder="输入单位名称" />
-          </div>
-          <div class="input-group">
-            <label for="serial">行政代码:</label>
-            <input id="serial" value="3610231000004" placeholder="输入行政代码" />
-          </div>
-          <button id="designComplete" class="primary-btn">设计完成</button>
-          <label class="file-input-wrapper" id="uploadWrapper" style="display: none;">
-            上传图片
-            <input id="bgImage" type="file" accept="image/*" />
-          </label>
-          <button id="saveBtn" class="primary-btn" style="display: none;">保存并下载</button>
-        </div>
-
         <div id="stage" class="stage">
           <canvas id="bgCanvas"></canvas>
           <img id="sealOverlay" alt="seal" draggable="false" ondragstart="return false" />
-        </div>
-        <div class="toolbar">
-          <span id="coords">X: 0, Y: 0</span>
-          <span id="canvasSize">画布尺寸: 0 x 0</span>
         </div>
       </div>
     </div>
@@ -55,12 +28,33 @@
       <div class="controls-container">
         <div id="controlsBox" class="controls-box">
           <div class="controls">
+            <div class="section-title">基本信息</div>
+            <div class="arc-row">
+              <label>
+                类型
+                <select id="type">
+                  <option value="居民委员会">居民委员会</option>
+                  <option value="村民委员会">村民委员会</option>
+                  <option value="其他">其他</option>
+                </select>
+                <input id="customType" type="text" placeholder="请输入自定义类型" style="display: none;" />
+              </label>
+              <label>
+                行政代码
+                <input id="serial" type="text" value="3610231000004" placeholder="行政代码" />
+              </label>
+            </div>
+            <label style="grid-column: 1/-1;">
+              单位名称
+              <input id="topText" type="text" value="赣州市南昌县琴城镇新建社区" placeholder="输入单位名称" />
+            </label>
+
             <div class="section-title">尺寸与样式</div>
             <label>
               圆直径(px)
               <div class="number-input-group">
                 <button class="number-btn" data-id="diameter" data-operation="-">-</button>
-                <input id="diameter" type="number" min="0" max="800" value="500" step="1" />
+                <input id="diameter" type="number" min="0" max="800" value="280" step="1" />
                 <button class="number-btn" data-id="diameter" data-operation="+">+</button>
               </div>
             </label>
@@ -68,7 +62,7 @@
               圆线宽(px)
               <div class="number-input-group">
                 <button class="number-btn" data-id="ringWidth" data-operation="-">-</button>
-                <input id="ringWidth" type="number" min="1" max="24" value="14" step="1" />
+                <input id="ringWidth" type="number" min="1" max="24" value="8" step="1" />
                 <button class="number-btn" data-id="ringWidth" data-operation="+">+</button>
               </div>
             </label>
@@ -89,7 +83,7 @@
                 起始角(°)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="topStartDeg" data-operation="-">-</button>
-                  <input id="topStartDeg" type="number" min="0" max="360" value="174" step="1" />
+                  <input id="topStartDeg" type="number" min="0" max="360" value="210" step="1" />
                   <button class="number-btn" data-id="topStartDeg" data-operation="+">+</button>
                 </div>
               </label>
@@ -97,7 +91,7 @@
                 距外圈(px)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="topOffset" data-operation="-">-</button>
-                  <input id="topOffset" type="number" min="0" max="60" value="22" step="1" />
+                  <input id="topOffset" type="number" min="0" max="60" value="18" step="1" />
                   <button class="number-btn" data-id="topOffset" data-operation="+">+</button>
                 </div>
               </label>
@@ -108,7 +102,7 @@
                 字距(倍数)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="topSpacing" data-operation="-">-</button>
-                  <input id="topSpacing" type="number" min="0" max="1.6" value="1.0" step="0.01" />
+                  <input id="topSpacing" type="number" min="0" max="1.6" value="0.82" step="0.01" />
                   <button class="number-btn" data-id="topSpacing" data-operation="+">+</button>
                 </div>
               </label>
@@ -116,7 +110,7 @@
                 旋转偏移(°)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="topRotateDeg" data-operation="-">-</button>
-                  <input id="topRotateDeg" type="number" min="-180" max="180" value="99" step="1" />
+                  <input id="topRotateDeg" type="number" min="-180" max="180" value="90" step="1" />
                   <button class="number-btn" data-id="topRotateDeg" data-operation="+">+</button>
                 </div>
               </label>
@@ -126,7 +120,7 @@
                 字号(px)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="topFontSize" data-operation="-">-</button>
-                  <input id="topFontSize" type="number" min="0" max="48" value="42" step="1" />
+                  <input id="topFontSize" type="number" min="0" max="48" value="22" step="1" />
                   <button class="number-btn" data-id="topFontSize" data-operation="+">+</button>
                 </div>
               </label>
@@ -134,7 +128,7 @@
                 字高(倍数)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="topFontHeight" data-operation="-">-</button>
-                  <input id="topFontHeight" type="number" min="0.5" max="3.0" value="1.0" step="0.1" />
+                  <input id="topFontHeight" type="number" min="0.5" max="3.0" value="1.2" step="0.1" />
                   <button class="number-btn" data-id="topFontHeight" data-operation="+">+</button>
                 </div>
               </label>
@@ -146,7 +140,7 @@
                 类型字号(px)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="fontSize" data-operation="-">-</button>
-                  <input id="fontSize" type="number" min="0" max="64" value="42" step="1" />
+                  <input id="fontSize" type="number" min="0" max="64" value="20" step="1" />
                   <button class="number-btn" data-id="fontSize" data-operation="+">+</button>
                 </div>
               </label>
@@ -155,7 +149,7 @@
                 五角星大小(px)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="starSize" data-operation="-">-</button>
-                  <input id="starSize" type="number" min="10" max="200" value="40" step="1" />
+                  <input id="starSize" type="number" min="10" max="200" value="36" step="1" />
                   <button class="number-btn" data-id="starSize" data-operation="+">+</button>
                 </div>
               </label>
@@ -166,7 +160,7 @@
                 起始角(°)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="bottomStartDeg" data-operation="-">-</button>
-                  <input id="bottomStartDeg" type="number" min="0" max="360" value="134" step="1" />
+                  <input id="bottomStartDeg" type="number" min="0" max="360" value="150" step="1" />
                   <button class="number-btn" data-id="bottomStartDeg" data-operation="+">+</button>
                 </div>
               </label>
@@ -174,7 +168,7 @@
                 距外圈(px)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="bottomOffset" data-operation="-">-</button>
-                  <input id="bottomOffset" type="number" min="0" max="60" value="28" step="1" />
+                  <input id="bottomOffset" type="number" min="0" max="60" value="18" step="1" />
                   <button class="number-btn" data-id="bottomOffset" data-operation="+">+</button>
                 </div>
               </label>
@@ -184,7 +178,7 @@
                 字距(倍数)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="bottomSpacing" data-operation="-">-</button>
-                  <input id="bottomSpacing" type="number" min="0" max="2" value="1.0" step="0.01" />
+                  <input id="bottomSpacing" type="number" min="0" max="2" value="0.50" step="0.01" />
                   <button class="number-btn" data-id="bottomSpacing" data-operation="+">+</button>
                 </div>
               </label>
@@ -192,7 +186,7 @@
                 字号(px)
                 <div class="number-input-group">
                   <button class="number-btn" data-id="bottomFontSize" data-operation="-">-</button>
-                  <input id="bottomFontSize" type="number" min="2" max="32" value="26" step="1" />
+                  <input id="bottomFontSize" type="number" min="2" max="32" value="14" step="1" />
                   <button class="number-btn" data-id="bottomFontSize" data-operation="+">+</button>
                 </div>
               </label>
@@ -201,6 +195,15 @@
         </div>
       </div>
     </div>
+  </div>
+  <!-- 底部固定操作栏 -->
+  <div class="bottom-bar">
+    <button id="designComplete" class="primary-btn">设计完成</button>
+    <label class="file-input-wrapper" id="uploadWrapper" style="display: none;">
+      上传图片
+      <input id="bgImage" type="file" accept="image/*" />
+    </label>
+    <button id="saveBtn" class="primary-btn" style="display: none;">保存并下载</button>
   </div>
   <script src="seal.js"></script>
 </body>
